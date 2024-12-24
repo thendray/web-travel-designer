@@ -1,10 +1,15 @@
 <template>
   <div class="modal-backdrop">
     <div class="modal">
-      <div class="form-fields">
-        <input type="text" placeholder="Поле 1" v-model="localData.field1">
-        <input type="text" placeholder="Поле 2" v-model="localData.field2">
-        <input type="text" placeholder="Поле 3" v-model="localData.field3">
+      <div class="content">
+        <div class="form-fields">
+          <input type="text" placeholder="Поле 1" v-model="localData.field1">
+          <input type="text" placeholder="Поле 2" v-model="localData.field2">
+          <input type="text" placeholder="Поле 3" v-model="localData.field3">
+        </div>
+        <div class="map-container">
+          <MapComponent />
+        </div>
       </div>
       <button type="button" @click="handleSave">Сохранить</button>
       <button type="button" @click="close">Отмена</button>
@@ -22,11 +27,13 @@
 <script>
 import { reactive, ref } from 'vue';
 import AlertModal from './AlertModal.vue';
+import MapComponent from "./EventMap.vue";
 
 export default {
   name: 'CreateCardForm',
   components: {
-    AlertModal
+    AlertModal,
+    MapComponent
   },
   setup(_, { emit }) {
     const localData = reactive({ field1: '', field2: '', field3: '' });
@@ -62,25 +69,49 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .modal {
-  background-color: white;
+  background: white;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 300px;
+  max-width: 80%; /* Увеличиваем максимальную ширину */
+  min-width: 500px; /* Минимальная ширина для модального окна */
+  width: 100%; /* Адаптивная ширина */
+}
+
+
+.content {
+  display: flex; /* Используем Flexbox */
+  gap: 20px; /* Отступ между формой и картой */
+  padding-bottom: 10px;
+}
+
+.form-fields {
+  flex: 2; /* Занимает оставшееся пространство */
+  display: flex;
+  flex-direction: column; /* Поля располагаются вертикально */
 }
 
 .form-fields input {
-  display: block;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   box-sizing: border-box;
+}
+
+.map-container {
+  flex: 4; /* Карта занимает больше места */
+  height: 400px; 
+  box-sizing: border-box;
+}
+
+button {
+  margin-right: 10px;
 }
 </style>
