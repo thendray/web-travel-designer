@@ -1,7 +1,5 @@
 <template>
-    <!-- <div class="container"> -->
-      <div ref="mapContainer" class="map-container" id="map-container"></div>
-    <!-- </div> -->
+      <!-- <div ref="mapContainer" class="map-container" id="map-container"></div> -->
   </template>
   
   <script setup>
@@ -9,7 +7,7 @@
   import { ref, onMounted } from "vue";
   
   let map = null;
-  const mapContainer = ref(null);
+  // const mapContainer = ref(null);
 
   
   onMounted(() => {
@@ -17,6 +15,19 @@
       initMap();
       console.log(map.getObjects)
     });
+    
+    var geoCode = window.ymaps.geocode("Александровский сад");
+      geoCode.then(
+        function(res){
+          var obj = res.geoObjects.get(0);
+          console.log("object", obj);
+
+          map.geoObjects.add(res.geoObjects);
+        },
+        function(err){
+          console.log("Ошибка", err)
+        }
+      )
   });
   
 //   watch(() => props.placemarks, handlePlaceMarks, { deep: true });
@@ -81,9 +92,6 @@
         center: [55.751574, 37.573856],
         zoom: 9,
         controls: ["default"]
-    },
-    {
-      searchControlProvider: 'yandex#search'
     });
   
     removeMapControls();
@@ -109,7 +117,7 @@
   function removeMapControls() {
     if (map) {
         console.log(map.controls)
-    //   map.controls.remove("searchControl");
+      map.controls.remove("searchControl");
       map.controls.remove("trafficControl");
       map.controls.remove("typeSelector");
       map.controls.remove("fullscreenControl");
