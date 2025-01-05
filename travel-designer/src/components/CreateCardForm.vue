@@ -3,26 +3,41 @@
     <div class="modal">
       <div class="content">
         <div class="form-fields">
-          <input type="text" placeholder="Поле 1" v-model="field1" />
-          <input type="text" placeholder="Поле 2" v-model="field2" />
-          <input type="text" placeholder="Поле 3" v-model="field3" />
-          <input
-            type="text"
-            v-model="taskCoords[0]"
-            placeholder="Широта"
-          />
-          <input
-            type="text"
-            v-model="taskCoords[1]"
-            placeholder="Долгота"
-          />
-          <input type="text" placeholder="Поле 4" v-model="field4" />
-          <button type="button" @click="handleFind">Найти</button>
+          <div class="form-group">
+            <label>Поле 1</label>
+            <input type="text" v-model="field1" placeholder="Поле 1">
+          </div>
+          <div class="form-group">
+            <label>Поле 2</label>
+            <input type="text" v-model="field2" placeholder="Поле 2">
+          </div>
+          <div class="form-group">
+              <label>Поле 3</label>
+              <input type="text" v-model="field3" placeholder="Поле 3">
+          </div>
+          <div class="form-group">
+              <label>Поле 4</label>
+              <input type="text" placeholder="Поле 4" v-model="field4" />
+              <div class="button-container">
+                <button type="button" class="half-width" @click="handleFind">Найти</button>
+                <button type="button" class="half-width" @click="handleClear">Очистить</button>
+              </div>
+          </div>
+
+          <div class="form-group">
+            <label>Широта</label>
+            <input type="text" v-model="taskCoords[0]" placeholder="Широта"/>
+            <label>Долгота</label>
+            <input type="text" v-model="taskCoords[1]" placeholder="Долгота"/>
+          </div>
+          
         </div>
         <div ref="mapC" class="map-container" id="map-container"></div>
       </div>
-      <button type="button" @click="handleSave">Сохранить</button>
-      <button type="button" @click="handleClose">Отмена</button>
+      <div class="action-buttons">
+        <button type="button" @click="handleSave" class="styled-button">Сохранить</button>
+        <button type="button" @click="handleClose" class="styled-button">Отмена</button>
+      </div>
 
       <!-- Подключаем модальное окно для алерта -->
       <AlertModal v-if="showAlert" :message="alertMessage" @close="handleClose" />
@@ -47,7 +62,7 @@ export default {
 
     const showAlert = ref(false);
     const alertMessage = ref("");
-    const taskCoords = ref([0, 0]);
+    const taskCoords = ref([null, null]);
 
     let map = null;
 
@@ -61,25 +76,25 @@ export default {
       map.events.add("click", function (e) {
         if (!map.balloon.isOpen()) {
           var coords = e.get("coords");
-          taskCoords.value = coords;
+          taskCoords.value = [coords[0].toPrecision(8), coords[1].toPrecision(8)];
           map.balloon.open(coords, {
             contentHeader: "Событие!",
             contentBody:
               "Координаты щелчка: " +
-              [coords[0].toPrecision(6), coords[1].toPrecision(6)].join(", ") +
+              taskCoords.value.join(", ") +
               "</p>",
             contentFooter: "<sup>Щелкните еще раз</sup>",
           });
 
-          console.log("Координаты щелчка: ", [coords[0].toPrecision(6), coords[1].toPrecision(6)].join(", "))
+          console.log("Координаты щелчка: ", taskCoords.value.join(", "))
         } else {
           map.balloon.close();
         }
       });
 
-      map.events.add("contextmenu", function (e) {
-        map.hint.open(e.get("coords"), "Кто-то щелкнул правой кнопкой");
-      });
+      // map.events.add("contextmenu", function (e) {
+      //   map.hint.open(e.get("coords"), "Кто-то щелкнул правой кнопкой");
+      // });
 
       map.events.add("balloonopen", function () {
         map.hint.close();
@@ -87,11 +102,13 @@ export default {
     }
 
     function initMap() {
-      map = new window.ymaps.Map(mapC.value, {
+      map = new window.ymaps.Map("map-container", {
         center: [55.751574, 37.573856],
         zoom: 9,
         controls: ['default']
-      });
+      }, {
+        maxZoom: 18
+    });
 
       removeMapControls();
       disableMapBehaviors();
@@ -130,7 +147,8 @@ export default {
       if (field4.value != "") {
         var geoCode = window.ymaps.geocode(field4.value);
         geoCode.then(
-          function(res){
+          function(res) {
+            console.log("запрос: ", field4, "ответ: ", res.geoObjects);
             res.geoObjects.events
                   // При наведении на метку показываем хинт с названием станции метро.
                   .add('mouseenter', function (event) {
@@ -146,10 +164,11 @@ export default {
                       var coords = geoObject.geometry.getCoordinates();
                       taskCoords.value = coords
 
-                      console.log("Координаты метки: ", [coords[0].toPrecision(6), coords[1].toPrecision(6)].join(", "))
+                      console.log("Координаты метки: ", [coords[0].toPrecision(8), coords[1].toPrecision(8)].join(", "))
                   })
                   ;
-
+            
+            map.geoObjects.removeAll();
             map.geoObjects.add(res.geoObjects);
             map.setBounds(res.geoObjects.getBounds());
           },
@@ -157,6 +176,13 @@ export default {
             console.log("Ошибка", err)
           }
         )
+      }
+    }
+
+    function handleClear() {
+      if (map) {
+        map.geoObjects.removeAll();
+        field4.value = ""
       }
     }
 
@@ -171,7 +197,8 @@ export default {
       handleSave,
       handleClose,
       handleFind,
-      taskCoords
+      taskCoords,
+      handleClear
     };
   }
 };
@@ -222,7 +249,7 @@ export default {
 
 .map-container {
   flex: 5; /* Карта занимает больше места */
-  height: 400px; 
+  /* height: 400px;  */
   box-sizing: border-box;
   width: 100%; 
   min-width: 50%; 
@@ -231,4 +258,76 @@ export default {
 button {
   margin-right: 10px;
 }
+
+.button-container {
+  display: flex;
+  width: 100%;
+  padding-bottom: 15px;
+  justify-content: space-between;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px; 
+    margin-left: 30%;
+    margin-right: 30%;
+}
+
+/* Стиль для всех кнопок */
+.styled-button {
+  width: 100%;
+  padding: 10px 20px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  background-color: #a2ffec;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+/* При наведении мыши */
+.styled-button:hover {
+    background-color: #ffe2b6;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+  /* color: #888888; */
+  font-weight: bold;
+}
+
+input[type="text"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.half-width {
+    flex: 1;
+    padding: 10px;
+    margin: 5px;
+    /* font-size: 16px; */
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    box-sizing: border-box;
+
+}
+
+.half-width:hover {
+    background-color: #e0e0e0;
+}
+
 </style>
