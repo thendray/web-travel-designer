@@ -13,7 +13,7 @@ const showForm = ref(false);
   
 function click() {
     showForm.value = true;
-    console.log('showForm: ', showForm)
+    console.log('showForm: ', showForm);
 }
 function close() {
     showForm.value = false
