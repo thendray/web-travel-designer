@@ -5,7 +5,7 @@
       <router-link to="/" class="header-link">На главную</router-link>
     </header>
     <div class="main-container">
-      <div class="overlay"></div>
+      <OverlayComp></OverlayComp>
       <div class="auth-form">
         <h2>Вход</h2>
         <input type="email" placeholder="Почта" v-model="email" />
@@ -18,6 +18,8 @@
 
 
 <script>
+import OverlayComp from './OverlayComp.vue';
+
 
 export default {
   data() {
@@ -25,6 +27,9 @@ export default {
       email: "",
       password: "",
     };
+  },
+  components: {
+    OverlayComp
   },
   methods: {
     login() {
@@ -55,16 +60,6 @@ export default {
   right: 0;
   bottom: 0;
   height: 100vh;
-}
-
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1;
 }
 
 .header {
@@ -141,6 +136,7 @@ button {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   color: rgb(51, 51, 51);
   background-color: rgb(220, 246, 255);
+  outline: none;
 }
 
 button:hover {

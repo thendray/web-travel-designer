@@ -16,7 +16,7 @@
       </header>
 
       <main class="main position-relative d-flex flex-column align-items-center justify-content-center flex-grow-1 text-center py-3">
-        <div class="overlay"></div>
+        <OverlayComp></OverlayComp>
         <div class="container position-relative z-index-2">
           <div class="container">
             <div v-for="(slide, index) in slides" :key="index" v-show="currentSlide === index" class="slide display-4 my-5">
@@ -31,19 +31,14 @@
         </div>
       </main>
   
-      <footer class="footer-overlay py-3">
-        <div class="container text-center">
-          <div class="social-media mb-1">
-            <a href="#" class="text-white mx-2"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" class="text-white mx-2"><i class="fab fa-instagram"></i></a>
-            <a href="#" class="text-white mx-2"><i class="fab fa-twitter"></i></a>
-          </div>
-        </div>
-      </footer>
+      <FooterComp class="py-3"></FooterComp>
     </div>
   </template>
   
 <script>
+import FooterComp from '@/components/FooterComp.vue';
+import OverlayComp from '@/components/OverlayComp.vue';
+
 
 export default {
   data() {
@@ -52,6 +47,10 @@ export default {
       currentSlide: 0,
       infoVisible: false,
     };
+  },
+  components: {
+    FooterComp,
+    OverlayComp
   },
   methods: {
     toggleInfo() {
@@ -103,21 +102,6 @@ nav {
 }
 
 
-.footer-overlay {
-  background-color: rgba(33, 37, 41, 0.7);
-}
-
-  
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1;
-}
-  
 .position-relative .z-index-2 {
   z-index: 2;
 }
@@ -161,6 +145,7 @@ button {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  outline: none;
 }
 
 button:hover {

@@ -257,6 +257,7 @@ export default {
 
 button {
   margin-right: 10px;
+  outline: none;
 }
 
 .button-container {

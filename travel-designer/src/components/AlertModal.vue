@@ -64,6 +64,7 @@
     color: white;
     border-radius: 4px;
     cursor: pointer;
+    outline: none;
   }
   
   .alert-modal button:hover {

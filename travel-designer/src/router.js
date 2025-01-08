@@ -4,6 +4,8 @@ import HomePage from "./views/HomePage.vue";
 import InitPage from "./views/InitPage.vue";
 import Authorization from "./components/AuthorizationComp.vue";
 import Registration from "./components/RegistrationComp.vue";
+import SetRouteSettings from "./views/SetRouteSettings.vue";
+import RouteRoom from "./views/RouteRoom.vue";
 
 const routes = [
   {
@@ -25,6 +27,14 @@ const routes = [
   {
     path: "/sign-up",
     component: Registration,
+  },
+  {
+    path: "/create-route",
+    component: SetRouteSettings,
+  },
+  {
+    path: "/route-room",
+    component: RouteRoom,
   },
 ];
 
