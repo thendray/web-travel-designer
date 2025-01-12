@@ -1,127 +1,126 @@
 <template>
-  <div class="room">
+  <div v-if="hasAccess">
+    <div class="room">
       <header class="header">
-        <div>участники</div>
-        <div>мои карточки</div>
-        <div>голосование</div>
-        <div class="title-search">
-          <div>Название путешествия</div>
-          <div>выйти</div>
+        <div class="left">
+          <nav>
+            <router-link to="/"  class="header-a">Участники</router-link>
+            <router-link to="/"  class="header-a">Ваши карточки</router-link>
+            <router-link to="/"  class="header-a">Голосование</router-link>
+          </nav>
+        </div>
+        <div class="center">Название вашего путешествия</div>
+        <div class="right">
+          <nav>
+            <router-link :to="`/route-room/${roomId}/settings`"  class="header-a">Настройки</router-link>
+            <a @click="exit" class="header-a green">На главную</a>
+          </nav>
         </div>
       </header>
-      <div class="main-container">
-        <div class="card-section">
-          <h3>Карточки Вашего Путешествия</h3>
-          <button class="filter-button">фильтры</button>
-          <div class="cards">
-            <div v-for="n in 6" :key="n" class="card"></div>
-          </div>
-        </div>
-        <div class="route-section">
-          <h3 class="day-title">День №1</h3>
-          <button class="arrow-button">&#x2190;</button>
-          <div class="route-planner">
-            <h4>Ваш Маршрут</h4>
-            <button class="filter-button">фильтры</button>
-            <div class="points">
-              <div v-for="point in points" :key="point">{{ point }}</div>
-            </div>
-            <button class="build-route-button">построить маршрут</button>
-          </div>
-          <div class="map">
-            <h4>Яндекс карта</h4>
-          </div>
-          <button class="arrow-button">&#x2192;</button>
-        </div>
+      <div class="main-content">
+        <OverlayComp></OverlayComp>
+        <RoomCards></RoomCards>
+        <RoomMap total-days=25></RoomMap>
       </div>
+    </div>
+  </div>
+
+  <div v-else>
+    <!-- Сообщение о недоступности -->
+    <h3>У вас нет доступа. Id={{ roomId }}</h3>
   </div>
 </template>
-  
+
 <script>
+import RoomCards from '@/components/RoomCards.vue';
+import RoomMap from '@/components/RoomMap.vue';
+import OverlayComp from '@/components/OverlayComp.vue';
+
 export default {
-    data() {
-        return {
-            points: ['Точка 1', 'Точка 2', 'Точка 3', 'Точка 4']
-        };
+  props: ['id'],
+  data() {
+    return {
+      roomId: null,
+      points: ['Точка 1', 'Точка 2', 'Точка 3', 'Точка 4'],
+      hasAccess: false
+    };
+  },
+  mounted() {
+    this.roomId = this.id;
+    this.hasAccess = this.id % 2 == 0;
+  },
+
+  components: {
+    OverlayComp,
+    RoomCards,
+    RoomMap
+  },
+
+  methods: {
+    exit() {
+      this.$router.push("/home")
     }
+  }
 };
 </script>
 
 <style scoped>
 .room {
-    font-family: Arial, sans-serif;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+
+  background-image: url('../assets/room_background.jpeg');
+  background-size: cover;
+  background-position: center;
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #e0e0e0;
-    padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  top: 0;
+  width: 100%;
+  display: flex;
+  padding: 10px 20px;
+  background-color: rgba(33, 37, 41, 0.45);
+  z-index: 2;
 }
 
-.main-container {
-    display: flex;
-    padding: 20px;
+.header .left,
+.header .right {
+  display: flex;
+  gap: 15px;
 }
 
-.card-section {
-    width: 30%;
-    background-color: #e0f7fa;
-    padding: 10px;
+nav {
+  display: flex;
 }
 
-.cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
+.header-a {
+  color: rgb(226, 250, 231);
+  transition: transform 0.3s ease, color 0.3s ease;
+  white-space: nowrap;
+  margin: 0 15px;
+  font-size: 1.15rem;
+  cursor: pointer;
 }
 
-.card {
-    width: 80px;
-    height: 100px;
-    margin: 10px;
-    background-color: #b2ebf2;
+.header-a:hover {
+  transform: scale(1.1);
+  color: rgb(203, 249, 213);
 }
 
-.route-section {
-    width: 70%;
-    position: relative;
-    background-color: #f3e5f5;
-    padding: 10px;
+.center {
+  color: rgb(226, 250, 231);
+  margin: 0 auto;
+  text-align: center;
+  font-size: 1.2rem;
+  justify-content: center;
 }
 
-.route-planner {
-    position: relative;
-    display: inline-block;
-    width: 30%;
-    background-color: #f8bbd0;
-    vertical-align: top;
-    margin-right: 20px;
+.main-content {
+  display: flex;
+  padding: 20px;
 }
 
-.map {
-    display: inline-block;
-    width: 60%;
-    background-color: #e0f2f1;
-    height: 200px;
-}
-
-.day-title {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.filter-button, .build-route-button, .arrow-button {
-    margin: 10px 0;
-}
-
-.title-search {
-    display: flex;
-    justify-content: space-between;
-    width: 20%;
-}
 </style>

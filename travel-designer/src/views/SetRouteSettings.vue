@@ -77,8 +77,7 @@ methods: {
         this.step = 1;
     },
     createTrip() {
-        // Обработка создания путешествия
-        alert('Путешествие создано!');
+        this.$router.push("/route-room/3");
     },
     cancel() {
         // Логика отмены действия

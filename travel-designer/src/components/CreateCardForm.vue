@@ -32,7 +32,7 @@
           </div>
           
         </div>
-        <div ref="mapC" class="map-container" id="map-container"></div>
+        <div ref="mapC" class="map-container" id="map-container-0"></div>
       </div>
       <div class="action-buttons">
         <button type="button" @click="handleSave" class="styled-button">Сохранить</button>
@@ -67,7 +67,7 @@ export default {
     let map = null;
 
     onMounted(() => {
-      if (window.ymaps && window.ymaps.ready) {
+      if (document.getElementById('map-container-0') && window.ymaps && window.ymaps.ready) {
         window.ymaps.ready(initMap);
       }
     });
@@ -102,7 +102,7 @@ export default {
     }
 
     function initMap() {
-      map = new window.ymaps.Map("map-container", {
+      map = new window.ymaps.Map("map-container-0", {
         center: [55.751574, 37.573856],
         zoom: 9,
         controls: ['default']

@@ -6,6 +6,9 @@ import Authorization from "./components/AuthorizationComp.vue";
 import Registration from "./components/RegistrationComp.vue";
 import SetRouteSettings from "./views/SetRouteSettings.vue";
 import RouteRoom from "./views/RouteRoom.vue";
+import RoomSettings from "./views/RoomSettings.vue";
+// import { compile } from "vue";
+import ChangeBaseSettings from "./components/ChangeBaseSettings.vue";
 
 const routes = [
   {
@@ -33,8 +36,18 @@ const routes = [
     component: SetRouteSettings,
   },
   {
-    path: "/route-room",
+    path: "/route-room/:id",
     component: RouteRoom,
+    props: true,
+  },
+  {
+    path: "/route-room/:id/settings",
+    component: RoomSettings,
+    props: true,
+  },
+  {
+    path: "/test",
+    component: ChangeBaseSettings,
   },
 ];
 

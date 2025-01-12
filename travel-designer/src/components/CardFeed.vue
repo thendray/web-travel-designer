@@ -22,13 +22,13 @@
   <style scoped>
   .card-lane-wrapper {
     width: 250px;
-    max-height: 70vh; 
+    max-height: 80vh; 
     min-width: 50vh;
     overflow-y: auto; 
     background-color: rgba(183, 208, 233, 0.3);
     border-radius: 10px;
     box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
-    margin-top: 5vh;
+    /* margin-top: 5vh; */
   }
 
   .main-text {
