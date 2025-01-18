@@ -13,7 +13,7 @@
     props: {
       cards: {
         type: Array,
-        default: () => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        default: () => [1, 2, 3]
       }
     }
   }
@@ -28,6 +28,7 @@
     background-color: rgba(183, 208, 233, 0.3);
     border-radius: 10px;
     box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+    min-height: 80vh;
     /* margin-top: 5vh; */
   }
 

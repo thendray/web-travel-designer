@@ -8,7 +8,7 @@ import SetRouteSettings from "./views/SetRouteSettings.vue";
 import RouteRoom from "./views/RouteRoom.vue";
 import RoomSettings from "./views/RoomSettings.vue";
 // import { compile } from "vue";
-import ChangeBaseSettings from "./components/ChangeBaseSettings.vue";
+import RoomMembers from "./views/RoomMembers.vue";
 
 const routes = [
   {
@@ -46,8 +46,13 @@ const routes = [
     props: true,
   },
   {
+    path: "/route-room/:id/members",
+    component: RoomMembers,
+    props: true,
+  },
+  {
     path: "/test",
-    component: ChangeBaseSettings,
+    component: RoomMembers,
   },
 ];
 

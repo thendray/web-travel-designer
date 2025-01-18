@@ -4,7 +4,7 @@
       <header class="header">
         <div class="left">
           <nav>
-            <router-link to="/"  class="header-a">Участники</router-link>
+            <router-link :to="`/route-room/${roomId}/members`"  class="header-a">Участники</router-link>
             <router-link to="/"  class="header-a">Ваши карточки</router-link>
             <router-link to="/"  class="header-a">Голосование</router-link>
           </nav>
