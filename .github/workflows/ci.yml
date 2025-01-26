@@ -41,7 +41,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          cd /vkr
+          cd vkr
           docker-compose down
           docker-compose pull travel
           docker-compose up -d
