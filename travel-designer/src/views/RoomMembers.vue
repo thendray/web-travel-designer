@@ -40,7 +40,7 @@
 </template>
   
 <script>
-import OverlayComp from '@/components/OverlayComp.vue';
+import OverlayComp from '@/components/common/OverlayComp.vue';
 
 export default {
   props: ["id"],

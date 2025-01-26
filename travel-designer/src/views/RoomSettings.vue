@@ -30,6 +30,10 @@
             <EntertaimentIcon></EntertaimentIcon>
           </span>
           <h5>Развлечения</h5>
+          <span class="category">
+            <QuestionIcon></QuestionIcon>
+          </span>
+          <h5>Другое</h5>
         </div>
       </div>
     </div>
@@ -40,9 +44,10 @@
 import BedIcon from '@/components/category/BedIcon.vue';
 import EntertaimentIcon from '@/components/category/EntertaimentIcon.vue';
 import FoodIcon from '@/components/category/FoodIcon.vue';
+import QuestionIcon from '@/components/category/QuestionIcon.vue';
 import ChangeAdditionalSettings from '@/components/ChangeAdditionalSettings.vue';
 import ChangeBaseSettings from '@/components/ChangeBaseSettings.vue';
-import OverlayComp from '@/components/OverlayComp.vue';
+import OverlayComp from '@/components/common/OverlayComp.vue';
 
 
 export default {
@@ -60,7 +65,8 @@ export default {
       BedIcon,
       FoodIcon,
       EntertaimentIcon,
-      OverlayComp
+      OverlayComp,
+      QuestionIcon
     },
 
     created() {

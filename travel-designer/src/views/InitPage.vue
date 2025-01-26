@@ -36,8 +36,8 @@
   </template>
   
 <script>
-import FooterComp from '@/components/FooterComp.vue';
-import OverlayComp from '@/components/OverlayComp.vue';
+import FooterComp from '@/components/home/FooterComp.vue';
+import OverlayComp from '@/components/common/OverlayComp.vue';
 
 
 export default {

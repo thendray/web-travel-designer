@@ -1,23 +1,23 @@
 <template>
   <div class="modal-backdrop">
-    <div class="modal">
-      <div class="content">
+    <div class="modal-this">
+      <div class="content-this">
         <div class="form-fields">
           <div class="form-group">
-            <label>Поле 1</label>
-            <input type="text" v-model="field1" placeholder="Поле 1">
+            <label>Название места</label>
+            <input type="text" v-model="name" placeholder="название">
           </div>
           <div class="form-group">
-            <label>Поле 2</label>
-            <input type="text" v-model="field2" placeholder="Поле 2">
+            <label>Описание</label>
+            <textarea v-model="description" placeholder="можете добавить описание места" rows="4"></textarea>
           </div>
+
           <div class="form-group">
-              <label>Поле 3</label>
-              <input type="text" v-model="field3" placeholder="Поле 3">
-          </div>
-          <div class="form-group">
-              <label>Поле 4</label>
-              <input type="text" placeholder="Поле 4" v-model="field4" />
+              <label>Адресс</label>
+              <div class="explanation">
+                <input type="text" placeholder="введите адрес" v-model="address" />
+                <ExplainingButton text="Введите адрес или исчерпывающее название места и нажмите кнопку 'Найти'. Нажмите на карте рядом с нужным местом, поля с координатами должны оказаться заполнены. Если нужного места не нашлось, можете найти его сами, щекнув на карту рядом с желаемым местом."></ExplainingButton>
+              </div>
               <div class="button-container">
                 <button type="button" class="half-width" @click="handleFind">Найти</button>
                 <button type="button" class="half-width" @click="handleClear">Очистить</button>
@@ -30,13 +30,35 @@
             <label>Долгота</label>
             <input type="text" v-model="taskCoords[1]" placeholder="Долгота"/>
           </div>
+
+          <div class="form-group">
+            <label>Добавить фотографию</label>
+            <input type="file" @change="previewImage" accept="image/*">
+            <div v-if="imageUrl" class="image-preview">
+              <img :src="imageUrl" alt="Превью изображения">
+            </div>
+          </div>
           
+          <div class="form-group">
+            <label>Выберите категорию</label>
+            <div class="icon-group">
+              <div 
+                v-for="(category, index) in categories" 
+                :key="index" 
+                :class="['icon', index === selectedCategory ? 'selected' : '']" 
+                @click="selectCategory(index)"
+              >
+                <img :src="category.icon" :alt="category.name">
+              </div>
+            </div>
+          </div>
+
         </div>
         <div ref="mapC" class="map-container" id="map-container-0"></div>
       </div>
       <div class="action-buttons">
-        <button type="button" @click="handleSave" class="styled-button">Сохранить</button>
-        <button type="button" @click="handleClose" class="styled-button">Отмена</button>
+        <button type="button" @click="handleSave" >Создать</button>
+        <button type="button" @click="handleClose" class="del">Отмена</button>
       </div>
 
       <!-- Подключаем модальное окно для алерта -->
@@ -48,22 +70,33 @@
 <script>
 import { ref, onMounted } from 'vue';
 import AlertModal from './AlertModal.vue';
+import ExplainingButton from '../common/ExplainingButton.vue';
 
 export default {
   components: {
-    AlertModal
+    AlertModal,
+    ExplainingButton
   },
   setup(props, {emit}) {
     const mapC = ref(null);
-    const field1 = ref("");
-    const field2 = ref("");
-    const field3 = ref("");
-    const field4 = ref("");
+    const name = ref("");
+    const description = ref("");
+    const imageUrl = ref("");
+    const address = ref("");
 
     const showAlert = ref(false);
     const alertMessage = ref("");
     const taskCoords = ref([null, null]);
 
+    const categories = [
+        { name: 'Отель', icon: require('../../assets/bed.png') },
+        { name: 'Еда', icon: require('../../assets/food.png') },
+        { name: 'Развлечения', icon: require('../../assets/entertaiment.png') },
+        { name: 'Другое', icon: require('../../assets/question.png') }
+    ];
+    
+    const selectedCategory = ref(0);
+    
     let map = null;
 
     onMounted(() => {
@@ -105,50 +138,33 @@ export default {
       map = new window.ymaps.Map("map-container-0", {
         center: [55.751574, 37.573856],
         zoom: 9,
-        controls: ['default']
+        controls: ['zoomControl']
       }, {
-        maxZoom: 18
+        maxZoom: 18,
+        minZoom: 3
     });
 
-      removeMapControls();
-      disableMapBehaviors();
       handleMapClick();
     }
 
-    function removeMapControls() {
-      if (map) {
-        map.controls.remove("searchControl");
-        map.controls.remove("trafficControl");
-        map.controls.remove("typeSelector");
-        map.controls.remove("fullscreenControl");
-        map.controls.remove("rulerControl");
-      }
-    }
-
-    function disableMapBehaviors() {
-      if (map) {
-        // map.behaviors.disable(["scrollZoom"]);
-      }
-    }
-
     function handleSave() {
-      console.log('Данные формы:', field1.value, field2.value, field3.value);
+      console.log('Данные формы:', name.value, description.value, imageUrl.value);
       alertMessage.value = 'Данные сохранены!';
       showAlert.value = true;
     }
 
     function handleClose() {
       showAlert.value = false;
-      emit('close');
+      emit('close-adding-new-card');
     }
 
     function handleFind() {
-      console.log('Поиск текста из 4-го поля:', field4.value);
-      if (field4.value != "") {
-        var geoCode = window.ymaps.geocode(field4.value);
+      console.log('Поиск текста из 4-го поля:', address.value);
+      if (address.value != "") {
+        var geoCode = window.ymaps.geocode(address.value);
         geoCode.then(
           function(res) {
-            console.log("запрос: ", field4, "ответ: ", res.geoObjects);
+            console.log("запрос: ", address, "ответ: ", res.geoObjects);
             res.geoObjects.events
                   // При наведении на метку показываем хинт с названием станции метро.
                   .add('mouseenter', function (event) {
@@ -182,23 +198,43 @@ export default {
     function handleClear() {
       if (map) {
         map.geoObjects.removeAll();
-        field4.value = ""
+        address.value = ""
       }
+    }
+
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imageUrl = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function selectCategory(index) {
+      selectedCategory.value = index;
+      console.log(selectedCategory);
     }
 
     return {
       mapC,
-      field1,
-      field2,
-      field3,
-      field4,
+      name,
+      description,
+      imageUrl,
+      address,
       showAlert,
       alertMessage,
       handleSave,
       handleClose,
       handleFind,
       taskCoords,
-      handleClear
+      handleClear,
+      previewImage,
+      categories,
+      selectCategory,
+      selectedCategory
     };
   }
 };
@@ -209,26 +245,27 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.modal {
+.modal-this {
   background: white;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  max-width: 80%; /* Увеличиваем максимальную ширину */
-  min-width: 500px; /* Минимальная ширина для модального окна */
-  width: 100%; /* Адаптивная ширина */
+  max-width: 80%; 
+  min-width: 500px; 
+  width: 100%;
+  max-height: 95%;
+  overflow-y: auto; 
 }
 
-
-.content {
+.content-this {
   display: flex; /* Используем Flexbox */
   gap: 20px; /* Отступ между формой и картой */
   padding-bottom: 10px;
@@ -241,7 +278,7 @@ export default {
 }
 
 .form-fields input {
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   width: 100%;
   padding: 10px;
   box-sizing: border-box;
@@ -256,8 +293,24 @@ export default {
 }
 
 button {
-  margin-right: 10px;
+  padding: 10px 20px;
+  width: 100%;
+  margin: 0 5px;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: rgb(51, 51, 51);
+  background-color: rgb(209, 242, 212);
   outline: none;
+}
+
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+  background-color: rgb(188, 240, 192);
+  color: rgb(51, 51, 51);
 }
 
 .button-container {
@@ -268,38 +321,22 @@ button {
 }
 
 .action-buttons {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px; 
-    margin-left: 30%;
-    margin-right: 30%;
-}
-
-/* Стиль для всех кнопок */
-.styled-button {
-  width: 100%;
-  padding: 10px 20px;
-  margin: 5px;
-  border: 1px solid #ccc;
-  background-color: #a2ffec;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-/* При наведении мыши */
-.styled-button:hover {
-    background-color: #ffe2b6;
+  display: flex;
+  justify-content: center;
+  margin-top: 10px; 
+  margin-left: 30%;
+  margin-right: 30%;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 
 label {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 1.0rem;
   color: #333;
   /* color: #888888; */
   font-weight: bold;
@@ -319,16 +356,66 @@ input[type="text"] {
     padding: 10px;
     margin: 5px;
     /* font-size: 16px; */
-    border: 1px solid #ccc;
+    /* border: 1px solid #ccc; */
     background-color: #f0f0f0;
     cursor: pointer;
-    transition: background-color 0.3s;
+    /* transition: background-color 0.3s; */
     box-sizing: border-box;
 
 }
 
 .half-width:hover {
     background-color: #e0e0e0;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical; 
+  min-height: 5vh;
+  max-height: 12vh;
+}
+
+.explanation {
+  display: flex;
+}
+
+.del {
+  background-color: rgb(225, 218, 248);
+}
+
+.del:hover {
+  background-color: rgb(213, 201, 250);
+}
+
+.image-preview img {
+  max-width: 150px; /* Задайте подходящий размер */
+  max-height: 150px;
+  margin-top: 10px;
+}
+
+.icon-group {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.icon {
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  width: 50px;
+  height: 50px;
+  transition: transform 0.2s;
+}
+
+.icon img {
+  width: 100%;
+  height: 100%;
+}
+
+.icon.selected {
+  transform: scale(1.1);
+  box-shadow: 0 0 5px 2px rgb(130, 225, 138);
 }
 
 </style>

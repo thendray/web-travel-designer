@@ -48,8 +48,8 @@
 </template>
 
 <script>
-import ExplainingButton from '@/components/ExplainingButton.vue';
-import OverlayComp from '@/components/OverlayComp.vue';
+import ExplainingButton from '@/components/common/ExplainingButton.vue';
+import OverlayComp from '@/components/common/OverlayComp.vue';
 
 export default {
 data() {

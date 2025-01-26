@@ -34,11 +34,11 @@
 
 <script>
 
-import CardFeed from '@/components/CardFeed.vue';
-import CreateRoute from '@/components/CreateRoute.vue';
-import RouteFeed from '@/components/RouteFeed.vue';
-import FooterComp from '@/components/FooterComp.vue';
-import OverlayComp from '@/components/OverlayComp.vue';
+import CardFeed from '@/components/home/CardFeed.vue';
+import CreateRoute from '@/components/home/CreateRoute.vue';
+import RouteFeed from '@/components/home/RouteFeed.vue';
+import FooterComp from '@/components/home/FooterComp.vue';
+import OverlayComp from '@/components/common/OverlayComp.vue';
 
 export default {
   data() {

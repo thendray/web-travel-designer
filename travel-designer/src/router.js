@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Card from "./components/CreateCardForm.vue";
+import Card from "./components/own-cards/CreateCardForm.vue";
 import HomePage from "./views/HomePage.vue";
 import InitPage from "./views/InitPage.vue";
 import Authorization from "./components/AuthorizationComp.vue";
@@ -9,6 +9,9 @@ import RouteRoom from "./views/RouteRoom.vue";
 import RoomSettings from "./views/RoomSettings.vue";
 // import { compile } from "vue";
 import RoomMembers from "./views/RoomMembers.vue";
+// import FullCard from "./components/cards/FullCard.vue";
+import UserCardsPage from "./views/UserCardsPage.vue";
+import VotePage from "./views/VotePage.vue";
 
 const routes = [
   {
@@ -51,8 +54,13 @@ const routes = [
     props: true,
   },
   {
+    path: "/route-room/:id/own-cards",
+    component: UserCardsPage,
+    props: true,
+  },
+  {
     path: "/test",
-    component: RoomMembers,
+    component: VotePage,
   },
 ];
 

@@ -18,7 +18,7 @@
 
 
 <script>
-import OverlayComp from './OverlayComp.vue';
+import OverlayComp from './common/OverlayComp.vue';
 
 
 export default {

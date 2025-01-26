@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="content">
-      <RoutePoints></RoutePoints>
+      <RoutePoints :points="points" @update-points="updatePoints"></RoutePoints>
       <div ref="mapC" class="map" id="map-container"></div>
     </div>
     <div class="footer">
@@ -23,8 +23,8 @@
   </template>
   
 <script>
-import LeftArrow from './LeftArrow.vue';
-import RightArrow from './RightArrow.vue';
+import LeftArrow from '../common/LeftArrow.vue'
+import RightArrow from '../common/RightArrow.vue';
 import RoutePoints from './RoutePoints.vue';
 
 // import { ref } from 'vue';
@@ -36,7 +36,7 @@ export default {
     data() {
         return {
           day: 1,
-          points: ["Точка 1", "Точка 2", "Точка 3", "Точка 4"],
+          points: [],
         };
     },
     props: {
@@ -51,6 +51,9 @@ export default {
         RightArrow,
         RoutePoints
     },
+    created() {
+      this.points = ["Точка 1", "Точка 2", "Точка 3", "Точка 4"]
+    },
     mounted() {
       const selectElement = document.getElementById('daySelector');
       for (let d = 1; d <= this.totalDays; d++) {
@@ -63,8 +66,18 @@ export default {
           console.log("карта инициализирована!");
         });
       }
+
+      this.fetchData();
+      this.interval = setInterval(this.fetchData, 1000); // 
+    },
+    beforeUnmount() {
+      clearInterval(this.interval);
     },
     methods: {
+      fetchData() {
+        // this.points = [...this.points, "newName"]
+        // console.log(this.points);
+      },
       prevDay() {
         if (this.day > 1) {
           this.points = this.points.map(x => x.substring(0, x.length - 1));
@@ -98,8 +111,12 @@ export default {
         if (map) {
          // map.behaviors.disable(["scrollZoom"]);
         }
+      },
+      updatePoints(newPoints) {
+        console.log("updatePoints");
+        this.points = newPoints;
       }
-    }
+    },
 };
 </script>
   
@@ -164,6 +181,8 @@ export default {
   height: 100%;
   /* z-index: 3; */
   margin-bottom: 5px;
+  max-height: 75vh;
+  max-width: 75vw;
 }
   
 .footer {

@@ -108,7 +108,7 @@ export default {
   min-width: 20vh; 
   text-align: left;
   border: 1px solid #ccc;
-  min-height: 15px;
+  min-height: 2rem;
   box-sizing: border-box;
 }
 

@@ -37,6 +37,11 @@
             default: () => ["Точка 1", "Точка 2", "Точка 3", "Точка 4", "3", "3", "5", "d", "a", "s"]
         }
     },
+    watch: {
+      points(newPoints) {
+        this.localPoints = [...newPoints];
+      }
+    },
     methods: {
       dragStart(index) {
         this.draggedItemIndex = index;
@@ -49,6 +54,8 @@
   
         // Печатаем текущий порядок в консоль
         console.log('Текущий порядок:', this.localPoints);
+        // меняем основной список
+        this.$emit('update-points', this.localPoints);
       },
       filter() {
         alert('Фильтр нажата');

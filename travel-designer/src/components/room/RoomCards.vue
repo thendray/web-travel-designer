@@ -7,18 +7,40 @@
         </div>
       </div>
       <div class="cards">
-        <div v-for="n in 20" :key="n" class="card">{{ n }}</div>
+        <div v-for="n in cardIds" :key="n" class="card">
+          <FullCardForRoom :card-id="n"></FullCardForRoom>
+        </div>
       </div>
     </div>
   </template>
-  
+<script>
+
+import FullCardForRoom from '../cards/FullCardForRoom.vue';
+
+export default {
+  components: {
+    FullCardForRoom
+  },
+  data() {
+    return {
+      cardIds: []
+    }
+  },
+  created() {
+    this.cardIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  }
+}
+
+</script>
+
+
 <style scoped>
 .cards-section {
     background-color: rgba(213, 251, 224, 0.3);
     border-radius: 8px;
-    padding: 10px;
+    padding: 5px;
     box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
-    width: 50vh;
+    width: 34vw;
     z-index: 2;
 }
   
@@ -61,23 +83,32 @@ button:hover {
     overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: space-around;
 }
 
-.card {
+/* .card {
     width: 30%;
     height: 90px;
     margin: 5px;
     background-color: rgb(220, 235, 223);
     border-radius: 5px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-}
+} */
 
 .main-text {
     font-size: 1.3rem;
     color: rgb(234, 249, 237);
     text-align: center;
     margin-bottom: 10px;
+}
+
+.card {
+    background: none;
+    border: 0px;
+    /* background-color: rgb(221, 242, 251);  */
+    /* margin-bottom: 10px; */
+    padding: 10px;
+    /* border-radius: 5px; */
 }
   
 </style>

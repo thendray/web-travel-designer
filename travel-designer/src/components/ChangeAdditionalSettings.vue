@@ -159,7 +159,7 @@ export default {
   min-width: 200px;
   text-align: left;
   border: 1px solid #ccc;
-  min-height: 15px;
+  min-height: 2rem;
 }
 
 button {

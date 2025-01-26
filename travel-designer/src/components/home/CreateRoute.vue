@@ -49,7 +49,7 @@ export default {
   color: rgb(51, 51, 51);
   background-color: rgb(221, 242, 251);
   font-size: 1.2rem;
-  font-weight: 800;
+  /* font-weight: 800; */
   outline: none;
   /* white-space: nowrap;  */
 }

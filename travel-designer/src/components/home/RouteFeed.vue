@@ -16,8 +16,8 @@
 </template>
   
 <script>
-import LeftArrow from './LeftArrow.vue';
-import RightArrow from './RightArrow.vue';
+import LeftArrow from '@/components/common/LeftArrow.vue';
+import RightArrow from '@/components/common/RightArrow.vue';
 
  export default {
     data() {

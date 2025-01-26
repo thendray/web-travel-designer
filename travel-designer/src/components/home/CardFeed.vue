@@ -3,13 +3,20 @@
     <div class="card-lane-wrapper">
       <div class="main-text">Карточки для Вас</div>
       <div class="card-lane">
-        <div class="card" v-for="n in cards" :key="n">карточка {{ n }}</div>
+        <div class="card" v-for="n in cards" :key="n"> 
+          <FullCard></FullCard>
+        </div>
       </div>
     </div>
   </template>
   
-  <script>
+<script>
+import FullCard from '../cards/FullCard.vue';
+
   export default {
+    components: {
+      FullCard
+    },
     props: {
       cards: {
         type: Array,
@@ -23,7 +30,7 @@
   .card-lane-wrapper {
     width: 250px;
     max-height: 80vh; 
-    min-width: 50vh;
+    min-width: 25vw;
     overflow-y: auto; 
     background-color: rgba(183, 208, 233, 0.3);
     border-radius: 10px;
@@ -44,9 +51,11 @@
   }
   
   .card {
-    background-color: rgb(221, 242, 251); 
+    background: none;
+    border: 0px;
+    /* background-color: rgb(221, 242, 251);  */
     margin-bottom: 10px;
     padding: 10px;
-    border-radius: 5px;
+    /* border-radius: 5px; */
   }
   </style>
