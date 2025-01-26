@@ -25,7 +25,8 @@ jobs:
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
-        context: .
+        context: ./travel-designer
+        file: ./travel-designer/Dockerfile
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/travel:latest
 
