@@ -54,6 +54,9 @@ export default {
     FooterComp,
     OverlayComp
   },
+  created() {
+    console.log("open home page for user", localStorage.getItem("id"));
+  },
   methods: {
     prevRoute() {
       if (this.currentRoute > 1) {
@@ -66,7 +69,10 @@ export default {
       }
     },
     exit() {
-      this.$router.push("/")
+      localStorage.setItem('isAuth', false);
+      localStorage.removeItem('id');
+
+      this.$router.push("/");
       console.log("exit");
     },
   },

@@ -11,6 +11,7 @@
         <input type="email" placeholder="Почта" v-model="email" />
         <input type="password" placeholder="Пароль" v-model="password" />
         <button @click="login">Войти</button>
+        <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
       </div>
     </div>
   </div>
@@ -19,24 +20,62 @@
 
 <script>
 import OverlayComp from './common/OverlayComp.vue';
-
+import axios from 'axios';
 
 export default {
   data() {
     return {
       email: "",
       password: "",
+      errorMessage: null
     };
   },
   components: {
     OverlayComp
   },
   methods: {
+    validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    },
     login() {
       // логика авторизации, возможно, через API
       console.log(`Email: ${this.email}, Password: ${this.password}`);
+      
+      if(!this.validateEmail(this.email)) {
+        this.errorMessage = 'Некорректный формат email';
+        return;
+      } else {
+        this.errorMessage = '';
+      }
 
-      this.$router.push("/home");
+      const formData = {
+        email: this.email,
+        password: this.password
+      };
+
+      try {
+        const response = axios.post('/api/v1/users/login', formData)
+          .then((response) => {
+            console.log("Response", response);
+            // Перенаправление пользователя на домашнюю страницу
+            localStorage.setItem("isAuth", true);
+
+            const userData = response.data;
+            const userId = userData.userId;
+
+            localStorage.setItem("id", userId);
+            this.$router.push("/home");
+          })
+          .catch((error) => {
+            console.log(error);
+            this.errorMessage = "Не получилось авторизоваться! Попробуйте еще раз"
+          });
+
+        console.log(response.data);
+      } catch(error) {
+        console.error('Error during login:', error);
+      }
     },
     register() {
       // логика перехода на страницу регистрации
@@ -160,5 +199,10 @@ button:hover {
   background-color: #007bff;
   color: white;
   cursor: pointer;
+}
+
+.error {
+  color: red;
+  margin-top: 4px;
 }
 </style>

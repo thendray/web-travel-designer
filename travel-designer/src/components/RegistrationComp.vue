@@ -11,14 +11,16 @@
   
           <div v-if="step === 1">
             <input type="email" placeholder="Почта" v-model="email" />
+            <input type="text" placeholder="Имя" v-model="name" />
             <input type="password" placeholder="Пароль" v-model="password" />
             <input type="password" placeholder="Подтвердите пароль" v-model="confirmPassword" />
             <button @click="nextStep">Дальше →</button>
+            <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
           </div>
   
           <div v-if="step === 2">
-            <input type="text" placeholder="Имя" v-model="name" />
-            <input type="file" @change="uploadFile" />
+            <div>Можете добавить фото профиля</div>
+            <input type="file" @change="uploadFile" ref="fileInput"/>
             <button @click="prevStep">← Назад</button>
             <button class="previous" @click="signUp">Зарегистрироваться</button>
           </div>
@@ -29,6 +31,7 @@
     
   
 <script>
+import axios from 'axios';
 import OverlayComp from './common/OverlayComp.vue';
 
 export default {
@@ -39,7 +42,8 @@ export default {
       confirmPassword: "",
       step: 1,
       name: '',
-      file: null
+      file: "https://img.icons8.com/ios-glyphs/90/user--v1.png",
+      errorMessage: null
     };
   },
   components: {
@@ -47,19 +51,70 @@ export default {
   },
   methods: {
     nextStep() {
+      if (this.password !== this.confirmPassword) {
+        this.errorMessage = 'Пароли не совпадают';
+        this.confirmPassword = '';
+        // return false;
+      } else if(!this.validateEmail(this.email)) {
+        this.errorMessage = 'Некорректный формат email';
+      } else {
+        this.errorMessage = '';
         this.step++;
+      }
     },
     prevStep() {
         this.step--;
     },
     uploadFile(event) {
-        this.file = event.target.files[0];
+      const file = event.target.files[0];
+      if (file && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.file = reader.result;
+          console.log(this.photo);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        this.file = "https://img.icons8.com/ios-glyphs/90/user--v1.png";
+      }
     },
-    signUp() {
-      // логика авторизации, возможно, через API
-      console.log(`Email: ${this.email}, Password: ${this.password}`);
+    validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    },
+    async signUp() {
+      const formData = {
+        email: this.email,
+        username: this.name,
+        password: this.password,
+        profilePhoto: this.file 
+      };
 
-      this.$router.push("/home");
+      try {
+        console.log(formData);
+        const response = axios.post('/api/v1/users/sign-up', formData)
+          .then((response) => {
+            console.log("Response", response);
+            // Перенаправление пользователя на домашнюю страницу
+            localStorage.setItem("isAuth", true);
+
+            const userData = response.data;
+            const userId = userData.userId;
+
+            localStorage.setItem("id", userId);
+            this.$router.push("/home");
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+
+        console.log(response.data);
+      } catch (error) {
+        // Обработка ошибок
+        console.error('Error during registration:', error);
+
+        // Добавьте логику для отображения уведомлений об ошибке пользователю
+      }
     }
   },
 };
@@ -163,6 +218,11 @@ button:hover {
 
 .previous {
   margin-top: 10px;
+}
+
+.error {
+  color: red;
+  margin-top: 4px;
 }
 
 </style>
