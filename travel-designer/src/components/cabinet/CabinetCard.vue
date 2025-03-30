@@ -4,17 +4,16 @@
 			<img :src="cardData.photoUrl" alt="фотография" />
 			<!-- <img src="../../assets/image.png" alt="фотография" /> -->
 		</div>
-		<div class="rating">
+		<!-- <div class="rating">
 			<span>{{ cardData.rating }}</span>
-		</div>
-		<h3 class="name">{{ cardData.name }}</h3>
+		</div> -->
+		<h5 class="name">{{ cardData.name }}</h5>
 		<p class="address">{{ cardData.address }}</p>
 		<div class="description">
 			<p>{{ cardData.description }}</p>
 		</div>
 		<div class="footer">
-			<span>{{ cardData.coords[0] }}</span>
-            <span>{{ cardData.coords[1] }}</span>
+			<span>by {{ cardData.author }}</span>
 			<img :src="iconSrc" alt="icon" class="category-icon" />
 		</div>
 	</div>
@@ -31,9 +30,10 @@ const icons = {
 
 export default {
 	props: {
-		card: {
-			require: true
-		}
+		cardId: {
+			type: Number,
+			required: true,
+		},
 	},
   computed: {
     iconSrc() {
@@ -42,25 +42,42 @@ export default {
   },
 	data() {
 		return {
-			cardData: {}
+			cardData: {
+				photoUrl: '',
+				rating: '',
+				name: '',
+				address: '',
+				description: '',
+				author: '',
+				icon: '',
+        coords: []
+			}
 		};
 	},
 	created() {
 		this.fetchCardData();
 	},
 	methods: {
-		fetchCardData() {
-			console.log("card", this.card);
+		async fetchCardData() {
 			this.cardData = {
-				photoUrl: this.card.photo,
-				rating: this.card.rating,
-				name: this.card.name,
-				address: this.card.routePoint.address,
-				icon: this.card.category,
-				description: this.card.description,
-				
-        coords: [this.card.routePoint.xCoord, this.card.routePoint.yCoord]
+				photoUrl: require("../../assets/mock/3.png"),
+				rating: '5.0',
+				name: 'ION Luxury Adventure Hotel',
+				address: 'Несьявеллир, Исландия',
+				icon: 'bed',
+				description: 'Геотермальные источники и склон вулкана Хейнгидль — отель ION Luxury Adventure Hotel находится в заповедной зоне. В 18 км от него — Национальный парк Тингведлир, который включен в список всемирного наследия ЮНЕСКО.',
+				author: 'thendray',
+        coords: [55.763641, 37.585223]
 			}
+			// try {
+			//   const response = await fetch(`https://your-backend-api.com/cards/${this.cardId}`);
+			//   if (!response.ok) {
+			//     throw new Error('Network response was not ok');
+			//   }
+			//   this.cardData = await response.json();
+			// } catch (error) {
+			//   console.error('Error fetching card data:', error);
+			// }
 		},
 	},
 };
@@ -71,12 +88,12 @@ export default {
 .my-card {
   background: linear-gradient(
     to bottom right, 
-    rgba(188, 167, 251, 0.85), rgba(168, 248, 175, 0.85)
+    rgba(191, 255, 255, 0.85), rgba(190, 255, 192, 0.85)
     );
   border-radius: 12px; 
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Небольшая тень */
-  padding: 16px;
-  width: 300px;
+  padding: 12px;
+  width: 200px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -88,7 +105,6 @@ export default {
   border-radius: 8px; /* Скругленные углы изображения */
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Небольшая тень */
 }
-
 
 .rating {
   position: absolute;

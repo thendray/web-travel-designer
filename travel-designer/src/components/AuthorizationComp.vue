@@ -1,6 +1,6 @@
 <template>
   <div class="auth-component">
-    <header class="header">
+    <header class="my-headerr">
       <router-link to="/sign-up" class="header-link">Зарегестрироваться</router-link>
       <router-link to="/" class="header-link">На главную</router-link>
     </header>
@@ -53,9 +53,13 @@ export default {
         email: this.email,
         password: this.password
       };
+      console.log(formData);
+
+      // localStorage.setItem("id", 2);
+      // this.$router.push("/home");
 
       try {
-        const response = axios.post('/api/v1/users/login', formData)
+        const response = axios.post('/api/users/login', formData)
           .then((response) => {
             console.log("Response", response);
             // Перенаправление пользователя на домашнюю страницу
@@ -65,6 +69,7 @@ export default {
             const userId = userData.userId;
 
             localStorage.setItem("id", userId);
+            localStorage.setItem("jwt", userData.jwt);
             this.$router.push("/home");
           })
           .catch((error) => {
@@ -101,19 +106,14 @@ export default {
   height: 100vh;
 }
 
-.header {
-  top: 0;
+.my-headerr {
   width: 100%;
   display: flex;
   justify-content: flex-end;
   padding: 10px 20px;
   background-color: rgba(33, 37, 41, 0.7);
-}
-
-.header div {
-  display: flex;
-  align-items: center;
-  width: 100%;
+  z-index: 3;
+  position: relative;
 }
 
 .header-link {

@@ -66,8 +66,8 @@ export default {
     this.lStart = this.start;
     this.lEnd = this.end;
     this.fields = {
-        "Начальная точка путешествия": this.lStart.adress,
-        "Конечная точка путешествия": this.lEnd.adress,
+        "Начальная точка путешествия": this.lStart,
+        "Конечная точка путешествия": this.lEnd,
       };
 
     console.log(this.start)

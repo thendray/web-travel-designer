@@ -12,6 +12,9 @@ import RoomMembers from "./views/RoomMembers.vue";
 // import FullCard from "./components/cards/FullCard.vue";
 import UserCardsPage from "./views/UserCardsPage.vue";
 import VotePage from "./views/VotePage.vue";
+import UserCabinetPage from "./views/UserCabinetPage.vue";
+import WaitLoading from "./components/common/WaitLoading.vue";
+// import RouteCard from "./components/home/RouteCard.vue";
 
 const routes = [
   {
@@ -59,8 +62,18 @@ const routes = [
     props: true,
   },
   {
-    path: "/test",
+    path: "/route-room/:id/vote",
     component: VotePage,
+    props: true,
+  },
+  {
+    path: "/user-cabinet",
+    component: UserCabinetPage,
+    props: true,
+  },
+  {
+    path: "/test",
+    component: WaitLoading,
   },
 ];
 

@@ -1,4 +1,5 @@
 <template>
+  <!-- <div v-if="cardData"> -->
     <div class="modal-backdrop">
       <div class="modal-this">
         <div class="content-this">
@@ -65,18 +66,33 @@
         <AlertModal v-if="showAlert" :message="alertMessage" @close="handleClose" />
       </div>
     </div>
+  <!-- </div>
+  <div v-else>
+    <WaitLoading></WaitLoading>
+  </div> -->
+    
   </template>
   
-  <script>
+<script>
   import { ref, onMounted, onBeforeMount } from 'vue';
   import AlertModal from './AlertModal.vue';
   import ExplainingButton from '../common/ExplainingButton.vue';
+// import WaitLoading from '../common/WaitLoading.vue';
+
+import axios from "axios";
+
   
-  export default {
-    props: ["cardId"],
+export default {
+    props: {
+      cardId: {
+        type: Number,
+        required: true
+      }
+    },
     components: {
       AlertModal,
-      ExplainingButton
+      ExplainingButton,
+      // WaitLoading
     },
     setup(props, {emit}) {
       const mapC = ref(null);
@@ -88,31 +104,44 @@
       const showAlert = ref(false);
       const alertMessage = ref("");
       const taskCoords = ref([null, null]);
+      const cardData = ref(null);
   
       const categories = [
-          { name: 'Отель', icon: require('../../assets/bed.png') },
-          { name: 'Еда', icon: require('../../assets/food.png') },
-          { name: 'Развлечения', icon: require('../../assets/entertaiment.png') },
-          { name: 'Другое', icon: require('../../assets/question.png') }
+        { name: 'Отель', icon: require('../../assets/bed.png'), serverName: 'bed' },
+        { name: 'Еда', icon: require('../../assets/food.png'), serverName: 'food' },
+        { name: 'Развлечения', icon: require('../../assets/entertaiment.png'), serverName: 'entertainment' },
+        { name: 'Другое', icon: require('../../assets/question.png'),  serverName: 'question' }
       ];
       
       const selectedCategory = ref(0);
       
       let map = null;
+      console.log("props", props);
 
       const fetchData = async () => {
-        name.value = "Вкусный кофе";
-        
-        // try {
-        //     const response = await axios.get(`/api/cards/${props.cardId}`);
-        //     cardData.value = response.data;
-        // } catch (err) {
-        //     error.value = 'Ошибка загрузки данных';
-        //     console.error(err);
-        // } finally {
-        //     loading.value = false;
-        // }
+        try {
+          // Используем props.id для запроса
+          const response = await axios.get(`/api/card/${props.cardId}`, {
+            headers: {
+              'accept': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+            }
+          });
+          cardData.value = response.data;
+          name.value = cardData.value.name;
+          description.value = cardData.value.description;
+          imageUrl.value = cardData.value.photo;
+          address.value = cardData.value.address;
+          taskCoords.value = [cardData.value.xCoord, cardData.value.yCoord];
+          selectedCategory.value = categories.findIndex(category => category.serverName === cardData.value.category);
+        } catch (err) {
+          console.error('Ошибка при загрузке данных:', err);
+          // error.value = err.message || 'Ошибка при загрузке данных';
+        } finally {
+          // loading.value = false;
+        }
       };
+
 
       onBeforeMount(() => {
         console.log("id", props.cardId);
@@ -255,7 +284,8 @@
         previewImage,
         categories,
         selectCategory,
-        selectedCategory
+        selectedCategory,
+        cardData
       };
     }
   };

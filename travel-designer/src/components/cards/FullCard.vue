@@ -1,11 +1,7 @@
 <template>
 	<div class="my-card">
 		<div class="photo">
-			<!-- <img :src="cardData.photoUrl" alt="фотография" /> -->
-			<img src="../../assets/image.png" alt="фотография" />
-		</div>
-		<div class="rating">
-			<span>{{ cardData.rating }}</span>
+			<img :src="cardData.photoUrl" alt="фотография" />
 		</div>
 		<h3 class="name">{{ cardData.name }}</h3>
 		<p class="address">{{ cardData.address }}</p>
@@ -16,6 +12,16 @@
 			<span>by {{ cardData.author }}</span>
 			<img :src="iconSrc" alt="icon" class="category-icon" />
 		</div>
+		<div class="adding">
+			<button 
+        @click="toggleLike" 
+        class="like-button" 
+        :class="{ 'liked': isLiked }" 
+        :disabled="isLiked">
+        <img src="../../assets/love.png" alt="icon" class="add-icon"/>
+        <span v-if="isLiked" class="like-toast">Добавлено в избранное</span>
+      </button>
+		</div>
 	</div>
 </template>
 
@@ -25,32 +31,24 @@
 const icons = {
   'bed': require('../../assets/bed.png'),
   'food': require('../../assets/food.png'),
-  'entertaiment': require('../../assets/entertaiment.png'),
+  'entertainment': require('../../assets/entertaiment.png'),
   'question': require('../../assets/question.png')
 };
 
 export default {
 	props: {
-		cardId: {
-			type: Number,
+		cardData: {
 			required: true,
 		},
 	},
 	data() {
 		return {
-			cardData: {
-				photoUrl: '',
-				rating: '',
-				name: '',
-				address: '',
-				description: '',
-				icon: '',
-				author: ''
-			}
+      isLiked: false,
+      showToast: false
 		};
 	},
 	created() {
-		this.fetchCardData();
+		
 	},
   computed: {
     iconSrc() {
@@ -58,25 +56,21 @@ export default {
     }
   },
 	methods: {
-		async fetchCardData() {
-			this.cardData = {
-				photoUrl: 'auth_background.jpeg',
-				rating: '5.0',
-				name: 'Отель на море',
-				address: 'Турция, Белек',
-				icon: 'food',
-				description: 'Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией',
-				author: 'thendray'
-			}
-			// try {
-			//   const response = await fetch(`https://your-backend-api.com/cards/${this.cardId}`);
-			//   if (!response.ok) {
-			//     throw new Error('Network response was not ok');
-			//   }
-			//   this.cardData = await response.json();
-			// } catch (error) {
-			//   console.error('Error fetching card data:', error);
-			// }
+    toggleLike() {
+      if (!this.isLiked) {
+        this.isLiked = true;
+        
+        this.showToastMessage();
+      }
+    },
+    showToastMessage() {
+      this.showToast = true;
+      setTimeout(() => {
+        this.showToast = false;
+      }, 3000);
+    },
+		addPoint() {
+
 		}
 	},
 };
@@ -100,23 +94,6 @@ export default {
   width: 100%;
   border-radius: 8px; /* Скругленные углы изображения */
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Небольшая тень */
-}
-
-
-.rating {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background-color: rgb(146, 238, 250);
-  font-weight: bold;
-  border-radius: 50%;
-  padding: 8px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .name {
@@ -155,5 +132,82 @@ export default {
 .category-icon {
   width: 36px;
   height: 36px;
+}
+
+.adding {
+  position: absolute;
+  bottom: -7px;
+  left: -7px;
+  background-color: rgb(183, 143, 247);
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.adding:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  background-color: rgb(169, 121, 246);
+}
+
+.add-icon {
+  width: 60px;
+  height: 60px;
+}
+
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  padding: 5px;
+  transition: all 0.3s ease;
+}
+
+.like-button img {
+  transition: transform 0.3s ease;
+}
+
+.like-button.liked {
+  background-color: rgba(255, 0, 0, 0.1);
+  border-radius: 50%;
+  cursor: default;
+}
+
+.like-button.liked img {
+  transform: scale(1.1);
+  filter: invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+}
+
+.like-toast {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: rgb(255, 255, 255);
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  margin-bottom: 5px;
+  animation: fadeInOut 3s forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
 }
 </style>

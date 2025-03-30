@@ -72,7 +72,16 @@ import { ref, onMounted } from 'vue';
 import AlertModal from './AlertModal.vue';
 import ExplainingButton from '../common/ExplainingButton.vue';
 
+
+import axios from "axios";
+// import { toRaw } from 'vue';
+
 export default {
+  props: {
+    id: {
+      require: true
+    }
+  },
   components: {
     AlertModal,
     ExplainingButton
@@ -81,18 +90,19 @@ export default {
     const mapC = ref(null);
     const name = ref("");
     const description = ref("");
-    const imageUrl = ref("");
+    const imageUrl = ref(null);
     const address = ref("");
 
     const showAlert = ref(false);
     const alertMessage = ref("");
     const taskCoords = ref([null, null]);
+    const defImage = ref(null);
 
     const categories = [
-        { name: 'Отель', icon: require('../../assets/bed.png') },
-        { name: 'Еда', icon: require('../../assets/food.png') },
-        { name: 'Развлечения', icon: require('../../assets/entertaiment.png') },
-        { name: 'Другое', icon: require('../../assets/question.png') }
+        { name: 'Отель', icon: require('../../assets/bed.png'), serverName: 'bed' },
+        { name: 'Еда', icon: require('../../assets/food.png'), serverName: 'food' },
+        { name: 'Развлечения', icon: require('../../assets/entertaiment.png'), serverName: 'entertainment' },
+        { name: 'Другое', icon: require('../../assets/question.png'),  serverName: 'question' }
     ];
     
     const selectedCategory = ref(0);
@@ -103,6 +113,7 @@ export default {
       if (document.getElementById('map-container-0') && window.ymaps && window.ymaps.ready) {
         window.ymaps.ready(initMap);
       }
+      defaultImage();
     });
 
     function handleMapClick() {
@@ -147,10 +158,55 @@ export default {
       handleMapClick();
     }
 
+    function defaultImage() {
+      const imagePath = require("../../assets/no-image.png");
+      fetch(imagePath)
+        .then(response => response.blob())
+        .then(blob => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            console.log("inside", event.target.result);
+            defImage.value = event.target.result;
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch(error => {
+          console.error("Error loading image:", error);
+        });
+    }
+
     function handleSave() {
-      console.log('Данные формы:', name.value, description.value, imageUrl.value);
-      alertMessage.value = 'Данные сохранены!';
-      showAlert.value = true;
+      const userId = localStorage.getItem('id') || 2;
+      const photo = imageUrl.value !== null ? imageUrl.value : defImage.value;
+      console.log("defImage", defImage.value);
+      console.log("photo", photo);
+     
+      const formData = {
+        authorId: userId,
+        routeId: props.id || 4,
+        name: name.value,
+        xCoord: taskCoords.value[0],
+        yCoord: taskCoords.value[1],
+        description: description.value,
+        photo: photo,
+        address: address.value,
+        category: categories[selectedCategory.value].serverName
+      }
+      // const rawFormData = toRaw(formData);
+      axios.post('/api/card/create-card', formData, {
+          headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+          }
+        })
+          .then((response) => {
+            console.log("Response", response);
+            alertMessage.value = 'Данные сохранены!';
+            showAlert.value = true;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
     }
 
     function handleClose() {
@@ -206,8 +262,8 @@ export default {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          this.imageUrl = e.target.result;
+        reader.onload = () => {
+          this.imageUrl = reader.result;
         };
         reader.readAsDataURL(file);
       }
@@ -234,7 +290,8 @@ export default {
       previewImage,
       categories,
       selectCategory,
-      selectedCategory
+      selectedCategory,
+      defaultImage
     };
   }
 };
@@ -388,7 +445,7 @@ textarea {
 }
 
 .image-preview img {
-  max-width: 150px; /* Задайте подходящий размер */
+  max-width: 150px;
   max-height: 150px;
   margin-top: 10px;
 }

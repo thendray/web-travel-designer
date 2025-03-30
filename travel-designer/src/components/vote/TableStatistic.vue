@@ -1,201 +1,203 @@
 <template>
   <div class="current-rating">
     <div class="main-text">Текущий Рейтинг</div>
-    <div class="table-wrapper">
-      <table>
-        <tbody>
-          <tr v-for="card in cards" :key="card.id" @click="openModal(card)">
-            <td>
-              <div class="card-row">
-                <div class="card-header">
-                  <h3>{{ card.name }}</h3>
-                  <div class="category-icon">Иконка</div>
-                </div>
-                <p>Описание: {{ card.description }}</p>
-                <p class="author">by {{ card.author }}</p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- <div class="table-wrapper"> -->
+      <!-- <div class="scrollable-table"> -->
+        <div v-for="card in cards" :key="card.id" class="card-item" @click="openModal(card)">
+          <div class="card-info">
+            <img :src="iconSrc(card.category)" alt="Category Icon" class="category-icon" />
+            <h3 class="card-name">{{ card.name }}</h3>
+          </div>
+          <div class="card-rating">
+            <span class="rating-value">{{ card.rating }}</span>
+          <!-- </div> -->
+        <!-- </div> -->
+      </div>
     </div>
-  </div>
-  <div v-if="showModal" class="modal">
-    <div class="modal-content">
-      <span class="close" @click="closeModal">&times;</span>
-      <h3>{{ selectedCard.name }}</h3>
-      <p>Полное описание: {{ selectedCard.description }}</p>
-      <p>Автор: {{ selectedCard.author }}</p>
+
+    <div v-if="selectedCard" class="modal-overlay" @click="closeModal">
+      <div @click.stop>
+        <!-- <button class="close-button" @click="closeModal">×</button> -->
+        <FullCardForVote></FullCardForVote>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import FullCardForVote from '../cards/FullCardForVote.vue';
+
+
+const icons = {
+  'bed': require('../../assets/bed.png'),
+  'food': require('../../assets/food.png'),
+  'entertainment': require('../../assets/entertaiment.png'),
+  'question': require('../../assets/question.png')
+};
+
 export default {
-  props: ["roomId"],
+  components: {
+    FullCardForVote
+  },
   data() {
     return {
-      cards: [
-        { id: 1, name: 'Карточка номер 1', rating: 5 },
-        { id: 2, name: 'Карточка номер 2', rating: 4 },
-        { id: 3, name: 'Карточка номер 3', rating: 3.7 },
-        { id: 4, name: 'Карточка номер 4', rating: 3.3 },
-        { id: 1, name: 'Карточка номер 1', rating: 5 },
-      ],
-      currentCardIndex: 0,
-      showModal: false,
+      cards: null,
       selectedCard: null,
-      localRoomId: null
     };
   },
   created() {
-    this.localRoomId = this.roomId;
+    this.cards = [
+  {
+    id: 1,
+    category: "bed",
+    author: "thendray",
+    rating: "9.0",
+    name: "Отель Метрополь",
+    address: "Театральный пр., 2, Москва, Россия",
+    description: "Исторический отель с роскошными номерами и видом на Большой театр. Идеальное место для отдыха в центре Москвы.",
+    photo: require("../../assets/mock/4.png"),
+    x: 37.620393,
+    y: 55.757399
+  },
+  {
+    id: 2,
+    category: "food",
+    author: "thendray",
+    rating: "9.2",
+    name: "Ресторан White Rabbit",
+    address: "Смоленская пл., 3, Москва, Россия",
+    description: "Высокая кухня с панорамным видом на город. Ресторан White Rabbit предлагает авторские блюда от шеф-повара Владимира Мухина.",
+    photo: require("../../assets/mock/5.png"),
+    x: 37.582645,
+    y: 55.747499
+  },
+  {
+    id: 3,
+    category: "entertainment",
+    author: "thendray",
+    rating: "8.7",
+    name: "Московский планетарий",
+    address: "Садово-Кудринская ул., 5, стр. 1, Москва, Россия",
+    description: "Интерактивные выставки и шоу на куполе Московского планетария подарят незабываемые впечатления и знания о космосе.",
+    photo: require("../../assets/mock/6.png"),
+    x: 37.585223,
+    y: 55.763641
+  }
+];
   },
   methods: {
     openModal(card) {
       this.selectedCard = card;
-      this.showModal = true;
     },
     closeModal() {
-      this.showModal = false;
       this.selectedCard = null;
     },
-  }
-}
-
+    iconSrc(iconStr) {
+      return icons[iconStr] || '';
+    }
+  },
+};
 </script>
 
 <style scoped>
+.current-rating {
+  padding: 20px;
+  background-color: rgba(243, 200, 178, 0.7);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  width: 32%;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 4;
+}
 
 .main-text {
-  font-size: 1.5rem;
-  /* color: rgb(55, 55, 55); */
-  text-align: center;
-  margin-bottom: 25px;
-  z-index: 2;
+	font-size: 1.5rem;
+	/* color: rgb(55, 55, 55); */
+	text-align: center;
+	margin-bottom: 25px;
+	/* z-index: 2; */
 }
 
 
-.current-rating {
-  width: 30%;
-  height: 80vh;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-}
-
-.table-wrapper {
-  width: 100%;
-  max-height: 100%;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  padding: 8px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-th {
-  background-color: #f2f2f2;
-}
-
-.rate-card {
-  width: 60%;
-  text-align: center;
-}
-
-.card-display {
-  margin: 20px 0;
-  padding: 20px;
-  border: 1px solid #ddd;
-  background-color: #f9f9f9;
-  min-height: 100px;
-}
-
-.controls {
-  margin-top: 20px;
-}
-
-button {
-  margin: 0 5px;
-}
-
-.card-row {
-  border: 1px solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-  position: relative;
-}
-
-.card-header {
+.card-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 15px;
+  /* border-bottom: 1px solid #eee; */
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin: 10px;
+  background-color: rgb(251, 222, 219);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.card-item:hover {
+  background-color: rgb(248, 197, 193);
+}
+
+.card-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .category-icon {
-  background-color: #e0f7fa;
-  border-radius: 50%;
-  padding: 10px;
-  font-size: 12px;
+  width: 24px;
+  height: 24px;
 }
 
-.author {
-  text-align: right;
-  font-style: italic;
+.card-name {
+  font-size: 18px;
+  margin: 0;
 }
 
-.rate-card {
-  width: 60%;
-  text-align: center;
+.card-rating {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffa500;
 }
 
-.card-display {
-  margin: 20px 0;
-  padding: 20px;
-  border: 1px solid #ddd;
-  background-color: #f9f9f9;
-  min-height: 150px;
-}
-
-.controls {
-  margin-top: 20px;
-}
-
-button {
-  margin: 0 5px;
-}
-
-.modal {
+/* Стили для модального окна */
+.modal-overlay {
   position: fixed;
-  left: 0;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 5;
 }
 
 .modal-content {
   background-color: white;
   padding: 20px;
-  border-radius: 10px;
-  max-width: 600px;
-  width: 90%;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  z-index: 5;
 }
 
-.close {
+.close-button {
   position: absolute;
-  right: 20px;
   top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
   cursor: pointer;
-  font-size: 20px;
 }
 
+.modal-photo {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
 </style>

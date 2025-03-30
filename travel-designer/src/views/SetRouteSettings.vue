@@ -50,6 +50,8 @@
 <script>
 import ExplainingButton from '@/components/common/ExplainingButton.vue';
 import OverlayComp from '@/components/common/OverlayComp.vue';
+import axios from 'axios';
+
 
 export default {
 data() {
@@ -59,15 +61,17 @@ data() {
         roomLogin: '',
         roomPassword: '',
         maxCards: '',
-        startPoint: '',
         tripDays: '',
-        endPoint: '',
-        tooltipVisible: false
+        tooltipVisible: false,
+        userId: null
     };
 },
 components: {
     OverlayComp,
     ExplainingButton
+},
+created() {
+  this.userId = localStorage.getItem("id") || 2
 },
 methods: {
     nextStep() {
@@ -77,14 +81,34 @@ methods: {
         this.step = 1;
     },
     createTrip() {
-        this.$router.push("/route-room/3");
-    },
-    cancel() {
-        // Логика отмены действия
-        alert('Действие отменено');
+      const requestData = {
+        id: 0,
+        creatorId: this.userId,
+        name: this.travelName,
+        login: this.roomLogin,
+        password: this.roomPassword,
+        cardLimit: this.maxCards,
+        days: this.tripDays
+      };
+
+      axios.post('/api/route/create', requestData, {
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        const responseData = response.data
+        console.log('Success:', responseData);
+
+        this.$router.push(`/route-room/${responseData.routeId}`);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
     },
     generateLogin() {
-        // Генерация логина
         this.roomLogin = 'generatedLogin';
     }
 

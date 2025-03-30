@@ -21,6 +21,9 @@
           <div v-if="step === 2">
             <div>Можете добавить фото профиля</div>
             <input type="file" @change="uploadFile" ref="fileInput"/>
+            <div v-if="this.file" class="image-preview">
+              <img :src="this.file" alt="Превью изображения">
+            </div>
             <button @click="prevStep">← Назад</button>
             <button class="previous" @click="signUp">Зарегистрироваться</button>
           </div>
@@ -42,7 +45,7 @@ export default {
       confirmPassword: "",
       step: 1,
       name: '',
-      file: "https://img.icons8.com/ios-glyphs/90/user--v1.png",
+      file: null,
       errorMessage: null
     };
   },
@@ -75,7 +78,7 @@ export default {
         };
         reader.readAsDataURL(file);
       } else {
-        this.file = "https://img.icons8.com/ios-glyphs/90/user--v1.png";
+        // this.file = "https://img.icons8.com/ios-glyphs/90/user--v1.png";
       }
     },
     validateEmail(email) {
@@ -89,10 +92,13 @@ export default {
         password: this.password,
         profilePhoto: this.file 
       };
+      console.log(formData);
+      // localStorage.setItem("id", 2);
+      // this.$router.push("/home");
 
       try {
         console.log(formData);
-        const response = axios.post('/api/v1/users/sign-up', formData)
+        const response = axios.post('/api/users/sign-up', formData)
           .then((response) => {
             console.log("Response", response);
             // Перенаправление пользователя на домашнюю страницу
@@ -102,6 +108,7 @@ export default {
             const userId = userData.userId;
 
             localStorage.setItem("id", userId);
+            localStorage.setItem("jwt", userData.jwt);
             this.$router.push("/home");
           })
           .catch((error) => {
@@ -110,10 +117,7 @@ export default {
 
         console.log(response.data);
       } catch (error) {
-        // Обработка ошибок
         console.error('Error during registration:', error);
-
-        // Добавьте логику для отображения уведомлений об ошибке пользователю
       }
     }
   },
@@ -139,6 +143,8 @@ export default {
   justify-content: flex-end;
   padding: 10px 20px;
   background-color: rgba(33, 37, 41, 0.7);
+  position: relative;
+  z-index: 3;
 }
 
 .header div {
@@ -224,5 +230,12 @@ button:hover {
   color: red;
   margin-top: 4px;
 }
+
+.image-preview img {
+  max-width: 150px;
+  max-height: 150px;
+  margin-bottom: 10px;
+}
+
 
 </style>

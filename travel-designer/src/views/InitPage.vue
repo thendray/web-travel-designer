@@ -89,6 +89,7 @@ export default {
   justify-content: space-between;
   padding: 0 20px;
   background-color: rgba(33, 37, 41, 0.7);
+  z-index: 2;
 }
 
 .header-overlay div {

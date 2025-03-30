@@ -1,8 +1,8 @@
 <template>
 	<div class="my-card">
 		<div class="photo">
-			<img :src="cardData.photoUrl" alt="фотография" />
-			<!-- <img src="../../assets/image.png" alt="фотография" /> -->
+			<!-- <img :src="cardData.photoUrl" alt="фотография" /> -->
+			<img src="../../assets/image.png" alt="фотография" />
 		</div>
 		<div class="rating">
 			<span>{{ cardData.rating }}</span>
@@ -13,12 +13,12 @@
 			<p>{{ cardData.description }}</p>
 		</div>
 		<div class="footer">
-			<span>{{ cardData.coords[0] }}</span>
-            <span>{{ cardData.coords[1] }}</span>
+			<span>by {{ cardData.author }}</span>
 			<img :src="iconSrc" alt="icon" class="category-icon" />
 		</div>
 	</div>
 </template>
+
 
 <script>
 
@@ -31,37 +31,53 @@ const icons = {
 
 export default {
 	props: {
-		card: {
-			require: true
-		}
+		cardId: {
+			type: Number,
+			required: true,
+		},
+	},
+	data() {
+		return {
+			cardData: {
+				photoUrl: '',
+				rating: '',
+				name: '',
+				address: '',
+				description: '',
+				icon: '',
+				author: ''
+			}
+		};
+	},
+	created() {
+		this.fetchCardData();
 	},
   computed: {
     iconSrc() {
       return icons[this.cardData.icon] || '';
     }
   },
-	data() {
-		return {
-			cardData: {}
-		};
-	},
-	created() {
-		this.fetchCardData();
-	},
 	methods: {
-		fetchCardData() {
-			console.log("card", this.card);
+		async fetchCardData() {
 			this.cardData = {
-				photoUrl: this.card.photo,
-				rating: this.card.rating,
-				name: this.card.name,
-				address: this.card.routePoint.address,
-				icon: this.card.category,
-				description: this.card.description,
-				
-        coords: [this.card.routePoint.xCoord, this.card.routePoint.yCoord]
+				photoUrl: 'auth_background.jpeg',
+				rating: '5.0',
+				name: 'Отель на море',
+				address: 'Турция, Белек',
+				icon: 'food',
+				description: 'Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией',
+				author: 'thendray'
 			}
-		},
+			// try {
+			//   const response = await fetch(`https://your-backend-api.com/cards/${this.cardId}`);
+			//   if (!response.ok) {
+			//     throw new Error('Network response was not ok');
+			//   }
+			//   this.cardData = await response.json();
+			// } catch (error) {
+			//   console.error('Error fetching card data:', error);
+			// }
+		}
 	},
 };
 </script>
@@ -69,14 +85,11 @@ export default {
 <style scoped>
 
 .my-card {
-  background: linear-gradient(
-    to bottom right, 
-    rgba(188, 167, 251, 0.85), rgba(168, 248, 175, 0.85)
-    );
+  background: linear-gradient(to bottom right, rgb(246, 200, 174), rgb(250, 178, 171));
   border-radius: 12px; 
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Небольшая тень */
   padding: 16px;
-  width: 300px;
+  width: 400px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -94,7 +107,7 @@ export default {
   position: absolute;
   top: 8px;
   right: 8px;
-  background-color: rgb(140, 249, 198);
+  background-color: rgb(247, 172, 122);
   font-weight: bold;
   border-radius: 50%;
   padding: 8px;

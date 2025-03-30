@@ -1,5 +1,6 @@
 <template>
-  <div class="my-container">
+  <div v-if="!loading">
+    <div class="my-container">
     <header class="header">
       <div class="center">Ваши карточки</div>
       <div class="right">
@@ -14,11 +15,11 @@
         <div class="cards">
           <div v-for="(card, index) in cards" :key="index" class="card-container">
             <div> 
-              <OwnCard :card-id="card"></OwnCard> 
+              <OwnCard :card="card"></OwnCard> 
             </div>
             <div class="card-buttons">
-              <button @click="deleteCard(index)" class="del">удалить</button>
-              <button @click="editCard(index)" class="edit">редактировать</button>
+              <button @click="deleteCard(card.id)" class="del">удалить</button>
+              <button @click="editCard(card.id)" class="edit">редактировать</button>
             </div>
           </div>
         </div>
@@ -29,7 +30,7 @@
     </div>
 
     <div v-if="showCreateModal">
-      <CreateCardForm @close-adding-new-card="closeAddingNewCard"></CreateCardForm>
+      <CreateCardForm :id="this.roomId" @close-adding-new-card="closeAddingNewCard"></CreateCardForm>
     </div>
 
     <!-- Модальное окно удаления -->
@@ -49,34 +50,60 @@
     </div>
 
   </div>
+  </div>
+  <div v-else>
+    <WaitLoading></WaitLoading>
+  </div>
+  
 </template>
 
 <script>
 import OwnCard from '@/components/cards/OwnCard.vue';
 import OverlayComp from '@/components/common/OverlayComp.vue';
+import WaitLoading from '@/components/common/WaitLoading.vue';
 import CreateCardForm from '@/components/own-cards/CreateCardForm.vue';
 import UpdateCardForm from '@/components/own-cards/UpdateCardForm.vue';
+import axios from 'axios';
 
 export default {
   props: ["id"],
   data() {
     return {
-      cards: [1, 2, 3, 4, 5, 6, 7, 8],
+      cards: null,
       showDeleteModal: false,
       showEditModal: false,
       showCreateModal: false,
       currentCardIndex: null,
-      roomId: null
+      roomId: null,
+      loading: true
     }
   },
   created() {
     this.roomId = this.id;
+    const userId = localStorage.getItem('id') || 2;
+    axios.get(`/api/route/${this.roomId}/user-cards/${userId}`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        this.cards = response.data.cards;
+        console.log(`response ${response.data.cards}`)
+        this.loading = false;
+      })
+      .catch(error => {
+        this.error = 'Не удалось загрузить данные маршрута';
+        console.error('Ошибка при получении данных:', error);
+        this.loading = false;
+      });
   },
   components: {
     OverlayComp,
     OwnCard,
     CreateCardForm,
-    UpdateCardForm
+    UpdateCardForm,
+    WaitLoading
   },
   methods: {
     addCard() {

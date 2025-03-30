@@ -7,27 +7,111 @@
         </div>
       </div>
       <div class="cards">
-        <div v-for="n in cardIds" :key="n" class="card">
-          <FullCardForRoom :card-id="n"></FullCardForRoom>
+        <div v-for="n in cards" :key="n" class="card">
+          <FullCardForRoom :card="n" @add-point="addPointToRoute"></FullCardForRoom>
         </div>
       </div>
     </div>
   </template>
 <script>
 
+import axios from 'axios';
 import FullCardForRoom from '../cards/FullCardForRoom.vue';
 
+
 export default {
+  props: ['id'],
   components: {
     FullCardForRoom
   },
   data() {
     return {
-      cardIds: []
+      cardIds: [],
+      cards: null
     }
   },
   created() {
-    this.cardIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const mock = [];
+//     const mock = [
+//   {
+//     id: 1,
+//     category: "bed",
+//     author: "thendray",
+//     rating: "9.0",
+//     name: "Отель Метрополь",
+//     address: "Театральный пр., 2, Москва, Россия",
+//     description: "Исторический отель с роскошными номерами и видом на Большой театр. Идеальное место для отдыха в центре Москвы.",
+//     photo: require("../../assets/mock/4.png"),
+//     x: 37.620393,
+//     y: 55.757399
+//   },
+//   {
+//     id: 2,
+//     category: "food",
+//     author: "thendray",
+//     rating: "9.2",
+//     name: "Ресторан White Rabbit",
+//     address: "Смоленская пл., 3, Москва, Россия",
+//     description: "Высокая кухня с панорамным видом на город. Ресторан White Rabbit предлагает авторские блюда от шеф-повара Владимира Мухина.",
+//     photo: require("../../assets/mock/5.png"),
+//     x: 37.582645,
+//     y: 55.747499
+//   },
+//   {
+//     id: 3,
+//     category: "entertainment",
+//     author: "thendray",
+//     rating: "8.7",
+//     name: "Московский планетарий",
+//     address: "Садово-Кудринская ул., 5, стр. 1, Москва, Россия",
+//     description: "Интерактивные выставки и шоу на куполе Московского планетария подарят незабываемые впечатления и знания о космосе.",
+//     photo: require("../../assets/mock/6.png"),
+//     x: 37.585223,
+//     y: 55.763641
+//   }
+// ];
+
+
+    axios.get(`/api/route/${this.id}/cards`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        console.log(`response ${response.data}`)
+        // this.loading = false;
+        this.cards = mock.concat(response.data.cards)
+      })
+      .catch(error => {
+        this.cards = mock;
+        // this.error = 'Не удалось загрузить данные маршрута';
+        console.error('Ошибка при получении данных:', error);
+        // this.loading = false;
+      });
+  },
+  methods: {
+    addPointToRoute(cardId) {
+      console.log("add point to route", cardId);
+      const request = {
+        routeId: this.id,
+        cardId: cardId,
+        day: localStorage.getItem('currentDay')
+      }
+      axios.post(`/api/route/add-to-route`, request, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        console.log(`response ${response.data}`);
+        this.$emit('add-point');
+      })
+      .catch(error => {
+        console.error('Ошибка при получении данных:', error);
+      });
+    }
   }
 }
 

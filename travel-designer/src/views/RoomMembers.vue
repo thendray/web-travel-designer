@@ -11,9 +11,13 @@
     <OverlayComp style="background-color: rgba(0, 0, 0, 0.4)"></OverlayComp>
     <div class="main-content">
       <div class="participants-block">
-        <div v-for="participant in participants" :key="participant.id" class="participant">
-          <span class="member-info">{{ participant.name }}</span>
-          <button class="delete" @click="confirmRemove(participant)" :disabled="!isAuthorized">удалить</button>
+        <div class="participant">
+          <span class="member-info">Вы</span>
+          <button class="delete" @click="confirmLeave">Покинуть</button>
+        </div>
+        <div v-for="member in members" :key="member.id" class="participant">
+          <span class="member-info">{{ member.name }}</span>
+          <button class="delete" @click="confirmRemove(member)" :disabled="!isAuthorized">удалить</button>
         </div>
       </div>
       <div class="add-block">
@@ -22,7 +26,7 @@
         <div v-if="isModalOpen" class="modal">
           <div class="modal-main">
             <p class="main-modal-text">Пригласить участника</p>
-            <input type="text" v-model="userId" id="user_id" placeholder="Id пользователя" />
+            <input type="text" v-model="inviteUser" id="user_id" placeholder="Id пользователя" />
             <button class="confirm" @click="confirmInviting">Пригласить</button>
             <button class="cancel" @click="cancelInviting">Отмена</button>
           </div>
@@ -31,9 +35,16 @@
     </div>
     <div v-if="showModal" class="modal">
       <div class="modal-main">
-        <p class="main-modal-text">Вы точно хотите удалить участника "{{ currentParticipant.name }}"?</p>
+        <p class="main-modal-text">Вы точно хотите удалить участника "{{ currentMember.name }}"?</p>
         <button class="delete" @click="removeParticipant">Удалить</button>
         <button class="cancel" @click="closeModal">Отмена</button>
+      </div>
+    </div>
+    <div v-if="showLeaveModal" class="modal">
+      <div class="modal-main">
+        <p class="main-modal-text">Вы точно хотите покинуть комнату?</p>
+        <button class="delete" @click="removeParticipant">Удалить</button>
+        <button class="cancel" @click="closeLeaveModal">Отмена</button>
       </div>
     </div>
   </div>
@@ -41,6 +52,7 @@
   
 <script>
 import OverlayComp from '@/components/common/OverlayComp.vue';
+import axios from 'axios';
 
 export default {
   props: ["id"],
@@ -49,30 +61,33 @@ export default {
   },
   data() {
     return {
-      participants: [
-        { id: 1, name: 'участник 1' },
-        { id: 2, name: 'участник 2' },
-        { id: 3, name: 'участник 3' },
-        { id: 4, name: 'участник 4' },
-        { id: 4, name: 'участник 4' },
-        { id: 4, name: 'участник 4' },
-        { id: 4, name: 'участник 4' },
-        { id: 4, name: 'участник 4' },
-        { id: 4, name: 'участник 4' },
-      ],
+      members: [],
       showModal: false,
-      currentParticipant: null,
+      currentMember: null,
       isAuthorized: false,
       roomId: null,
       isModalOpen: false,
-      userId: ''
+      inviteUser: null,
+      showLeaveModal: false
     };
   },
   created() {
-  //   const userId = localStorage.getItem('userId');
-    const userId = '1';
-    this.isAuthorized = userId === '1';
-    this.roomId = this.id;
+    axios.get(`/api/route/${this.id}/members`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        const userId = localStorage.getItem('id');
+        this.members = response.data.members.filter(m => m.userId != userId);
+        
+        this.isAuthorized = (userId == response.data.routeCreatorId);
+        this.roomId = this.id;
+      })
+      .catch(error => {
+        console.error('Ошибка при получении данных:', error);
+      });
   },
   methods: {
     addParticipant() {
@@ -82,23 +97,70 @@ export default {
     },
     cancelInviting() {
       this.isModalOpen = false;
-      this.userId = '';
+      this.inviteUser = '';
     },
     confirmInviting() {
-      this.participants.push({ id: "newId", name: `участник name` });
+      axios.put(`/api/route/${this.roomId}/member/${this.inviteUser}`, {}, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        console.log(`response ${response.data}`);
+        this.members.push(response.data);
+        console.log("cur members", this.members);
+      })
+      .catch(error => {
+        console.error('Ошибка при получении данных:', error);
+      });
       this.isModalOpen = false;
     },
-    confirmRemove(participant) {
-      this.currentParticipant = participant;
+    confirmRemove(member) {
+      this.currentMember = member;
       this.showModal = true;
     },
+    confirmLeave() {
+      this.showLeaveModal = true;
+    },
     removeParticipant() {
-      this.participants = this.participants.filter(p => p.id !== this.currentParticipant.id);
-      this.closeModal();
+      axios.delete(`/api/route/${this.id}/member/${this.currentMember.userId}`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        console.log(response.data);
+        this.members = this.members.filter(p => p.userId != this.currentMember.userId);
+        this.closeModal();
+      })
+      .catch(error => {
+        console.error('Ошибка при получении данных:', error);
+      });
     },
     closeModal() {
       this.showModal = false;
-      this.currentParticipant = null;
+      this.currentMember = null;
+    },
+    leaveRoom() {
+      axios.delete(`/api/route/${this.id}/member/${localStorage.getItem("id")}`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        console.log(response.data);
+        this.$route.push('/home')
+        this.closeLeaveModal();
+      })
+      .catch(error => {
+        console.error('Ошибка при получении данных:', error);
+      });
+    },
+    closeLeaveModal() {
+      this.showLeaveModal = false;
     },
     exit() {
       this.$router.push(`/route-room/${this.roomId}`);

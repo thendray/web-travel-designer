@@ -11,7 +11,7 @@
         <div class="right">
           <nav>
             <a @click="exit" class="header-a green">Выйти</a>
-            <a class="header-a green">Кабинет</a>
+            <router-link to="/user-cabinet"  class="header-a">Кабинет</router-link>
           </nav>
         </div>
       </header>
@@ -44,7 +44,7 @@ export default {
   data() {
     return {
       currentRoute: 1,
-      totalRoutes: 5,
+      totalRoutes: 5
     };
   },
   components: {

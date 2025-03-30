@@ -1,8 +1,8 @@
 <template>
 	<div class="my-card">
 		<div class="photo">
-			<!-- <img :src="cardData.photoUrl" alt="фотография" /> -->
-			<img src="../../assets/image.png" alt="фотография" />
+			<img :src="cardData.photo" alt="фотография" />
+			<!-- <img src="../../assets/image.png" alt="фотография" /> -->
 		</div>
 		<div class="rating">
 			<span>{{ cardData.rating }}</span>
@@ -26,33 +26,24 @@
 const icons = {
   'bed': require('../../assets/bed.png'),
   'food': require('../../assets/food.png'),
-  'entertaiment': require('../../assets/entertaiment.png'),
+  'entertainment': require('../../assets/entertaiment.png'),
   'question': require('../../assets/question.png')
 };
 
 export default {
 	props: {
-		cardId: {
-			type: Number,
-			required: true,
-		},
+    card: {
+      required: true
+    }
 	},
   computed: {
     iconSrc() {
-      return icons[this.cardData.icon] || '';
+      return icons[this.cardData.category] || '';
     }
   },
 	data() {
 		return {
-			cardData: {
-				photoUrl: '',
-				rating: '',
-				name: '',
-				address: '',
-				description: '',
-				author: '',
-        icon: ''
-			}
+			cardData: null
 		};
 	},
 	created() {
@@ -60,30 +51,11 @@ export default {
 	},
 	methods: {
 		async fetchCardData() {
-      var name = this.cardId % 3 == 0 ? 'Отель с ооооооооооченьь длинным названеием' : 'Отель с коротким';
-			this.cardData = {
-				photoUrl: 'auth_background.jpeg',
-				rating: '5.0',
-				categoryIconUrl: 'bed.png',
-				name: name,
-				address: 'Турция, Белек',
-				description: 'Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией',
-				author: 'thendray',
-        icon: 'food'
-			}
-			// try {
-			//   const response = await fetch(`https://your-backend-api.com/cards/${this.cardId}`);
-			//   if (!response.ok) {
-			//     throw new Error('Network response was not ok');
-			//   }
-			//   this.cardData = await response.json();
-			// } catch (error) {
-			//   console.error('Error fetching card data:', error);
-			// }
+			this.cardData = this.card
 		},
     addPoint() {
       console.log("click");
-      this.$emit('add-point', this.cardId.toString);
+      this.$emit('add-point', this.cardData.id);
     }
 	},
 };

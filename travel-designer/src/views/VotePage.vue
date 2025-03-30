@@ -8,28 +8,12 @@
         </nav>
       </div>
     </header>
+    <OverlayComp></OverlayComp>
 
     <div class="content">
       <TableStatistic></TableStatistic>
       <div class="rate-card">
-        <h2>Оцените</h2>
-        <div class="card-display">
-          <div class="card-content">
-            <div class="card-header">
-              <h3>{{ currentCard.name }}</h3>
-              <div class="category-icon">Иконка</div>
-            </div>
-            <p>Описание карточки</p>
-            <p class="author">by Author</p>
-          </div>
-        </div>
-        <div class="controls">
-          <button @click="previousCard">⬅️</button>
-          <button @click="rateCard('down')">👎</button>
-          <button @click="rateCard('neutral')">🤔</button>
-          <button @click="rateCard('up')">👍</button>
-          <button @click="nextCard">➡️</button>
-        </div>
+        <VoteComponent></VoteComponent>
       </div>
     </div>
 
@@ -37,12 +21,16 @@
 </template>
   
 <script>
+import OverlayComp from '@/components/common/OverlayComp.vue';
 import TableStatistic from '@/components/vote/TableStatistic.vue';
+import VoteComponent from '@/components/vote/VoteComponent.vue';
 
 export default {
   props: ["id"],
   components: {
-    TableStatistic
+    TableStatistic,
+    VoteComponent,
+    OverlayComp
   },
   data() {
     return {
@@ -82,17 +70,26 @@ export default {
     },
     rateCard(rating) {
       console.log(`Card rated with: ${rating}`);
-    }
+    },
+    exit() {
+        this.$router.push(`/route-room/${this.roomId}`)
+      }
   },
 };
 </script>
 
 <style scoped>
 .voting-page {
-  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+
+  background-image: url('../assets/vote_background.jpeg');
+  background-size: cover;
+  background-position: center;
 }
   
-  .header {
+.header {
   display: flex;
   justify-content: space-between;
   top: 0;
@@ -114,7 +111,7 @@ nav {
 }
 
 .center {
-  color: rgb(188, 240, 192);
+  color: rgb(231, 206, 206);
   margin: 0 auto;
   text-align: center;
   font-size: 1.2rem;
@@ -122,7 +119,7 @@ nav {
 }
 
 .header-a {
-  color: rgb(188, 240, 192);
+  color: rgb(231, 206, 206);
   transition: transform 0.3s ease, color 0.3s ease;
   white-space: nowrap;
   margin: 0 15px;
@@ -132,7 +129,7 @@ nav {
 
 .header-a:hover {
   transform: scale(1.1);
-  color: rgb(156, 235, 162);
+  color: rgb(224, 169, 169);
 }
 
 .main-text {
@@ -148,16 +145,12 @@ nav {
   margin-top: 20px;
 }
 
-.current-rating {
-  width: 30%;
-  height: 80vh;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-}
-
 .rate-card {
   width: 60%;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center
 }
   
 .card-display {
@@ -172,10 +165,6 @@ nav {
   position: relative;
 }
   
-.controls {
-  margin-top: 20px;
-}
-
 button {
   margin: 0 5px;
 }

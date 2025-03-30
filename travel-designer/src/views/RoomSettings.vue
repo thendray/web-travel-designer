@@ -1,43 +1,51 @@
 <template>
-  <div class="settings-page">
-    <header class="header">
-      <div class="center">Название вашего путешествия</div>
-      <div class="right">
-          <nav>
-            <a @click="exit" class="header-a">Выйти</a>
-          </nav>
+  <div v-if="settings">
+    <div class="settings-page">
+      <header class="header">
+        <div class="center"> {{ settings.name }}</div>
+        <div class="right">
+            <nav>
+              <a @click="exit" class="header-a">Выйти</a>
+            </nav>
+          </div>
+      </header>
+      <OverlayComp></OverlayComp>
+      
+      <div class="main-content">
+        <div class="container">
+          <ChangeBaseSettings :login=settings.login :password=settings.password 
+            :name=settings.name :day-count=settings.days :card-max=settings.cardLimit
+          ></ChangeBaseSettings>
+          <ChangeAdditionalSettings :start=settings.beginAddress :end=settings.endAddress></ChangeAdditionalSettings>
         </div>
-    </header>
-    <OverlayComp></OverlayComp>
-    
-    <div class="main-content">
-      <div class="container">
-        <ChangeBaseSettings></ChangeBaseSettings>
-        <ChangeAdditionalSettings :start=start :end=end></ChangeAdditionalSettings>
-      </div>
-      <div class="category-section">
-        <div class="main-text">Категории карточек</div>
-        <div class="categories">
-          <span class="category">
-            <BedIcon></BedIcon>
-          </span>
-          <h5>Отели</h5>
-          <span class="category">
-            <FoodIcon></FoodIcon>
-          </span>
-          <h5>Еда</h5>
-          <span class="category">
-            <EntertaimentIcon></EntertaimentIcon>
-          </span>
-          <h5>Развлечения</h5>
-          <span class="category">
-            <QuestionIcon></QuestionIcon>
-          </span>
-          <h5>Другое</h5>
+        <div class="category-section">
+          <div class="main-text">Категории карточек</div>
+          <div class="categories">
+            <span class="category">
+              <BedIcon></BedIcon>
+            </span>
+            <h5>Отели</h5>
+            <span class="category">
+              <FoodIcon></FoodIcon>
+            </span>
+            <h5>Еда</h5>
+            <span class="category">
+              <EntertaimentIcon></EntertaimentIcon>
+            </span>
+            <h5>Развлечения</h5>
+            <span class="category">
+              <QuestionIcon></QuestionIcon>
+            </span>
+            <h5>Другое</h5>
+          </div>
         </div>
       </div>
     </div>
   </div>
+  <div v-else>
+    <WaitLoading></WaitLoading>
+  </div>
+  
 </template>
 
 <script>
@@ -48,15 +56,15 @@ import QuestionIcon from '@/components/category/QuestionIcon.vue';
 import ChangeAdditionalSettings from '@/components/ChangeAdditionalSettings.vue';
 import ChangeBaseSettings from '@/components/ChangeBaseSettings.vue';
 import OverlayComp from '@/components/common/OverlayComp.vue';
-
+import WaitLoading from '@/components/common/WaitLoading.vue';
+import axios from 'axios';
 
 export default {
     props: ["id"],
     data() {
         return {
             roomId: null,
-            start: null,
-            end: null
+            settings: null
         }
     },
     components: {
@@ -66,13 +74,27 @@ export default {
       FoodIcon,
       EntertaimentIcon,
       OverlayComp,
-      QuestionIcon
+      QuestionIcon,
+      WaitLoading
     },
 
     created() {
-        this.roomId = this.id;
-        this.start = {adress: "SVO"};
-        this.end = {adress: "DMV"};
+      this.roomId = this.id;
+      axios.get(`/api/route/${this.roomId}`, {
+        headers: {
+          'accept': 'application/json'
+        }
+      })
+      .then(response => {
+        this.settings = response.data;
+        console.log(`response ${this.settings}`)
+        this.loading = false;
+      })
+      .catch(error => {
+        this.error = 'Не удалось загрузить данные маршрута';
+        console.error('Ошибка при получении данных:', error);
+        this.loading = false;
+      });
     },
     methods: {
       exit() {

@@ -23,7 +23,7 @@
 
 <script>
 export default {
-  props: ['login', 'password', 'name', 'dayCount', 'cradMax'],
+  props: ['login', 'password', 'name', 'dayCount', 'cardMax', 'id'],
   data() {
     return {
       lLogin: null,
@@ -34,7 +34,8 @@ export default {
       fields: [],
       showModal: false,
       currentField: '',
-      newValue: ''
+      newValue: '',
+      roomId: null
     };
   },
   mounted() {
@@ -42,7 +43,8 @@ export default {
     this.lPassword = this.password;
     this.lName = this.name;
     this.lDayCount = this.dayCount;
-    this.fieldslCardMax = this.cradMax;
+    this.lCardMax = this.cardMax;
+    this.roomId = this.id;
 
     this.fields = {
         'Логин комнаты': this.lLogin,

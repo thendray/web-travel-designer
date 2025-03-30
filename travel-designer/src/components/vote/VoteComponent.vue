@@ -1,16 +1,16 @@
 <template>
-	<div class="routes">
-		<div class="main-text">Маршруты для Вас</div>
-		<div class="route-controls">
+	<div class="for-vote">
+		<div class="main-text">Оцените</div>
+		<div class="vote-controls">
 			<div class="arrow">
-				<LeftArrow @click="prevRoute"></LeftArrow>
+				<LeftArrow @click="prevCard"></LeftArrow>
 			</div>
 			<transition :name="transitionName" mode="out-in">
-				<RouteCard :key="currentRoute"></RouteCard>
-				<!-- <div class="route" :key="currentRoute">маршрут {{ currentRoute }}</div> -->
+        <FullCardWithMarks :card-id=currentCard :key="currentCard"></FullCardWithMarks>
+				<!-- <div class="vote-card" :key="currentCard">Карточка {{ currentCard }}</div> -->
 			</transition>
 			<div class="arrow">
-				<RightArrow @click="nextRoute"></RightArrow>
+				<RightArrow @click="nextCard"></RightArrow>
 			</div>
 		</div>
 	</div>
@@ -19,32 +19,32 @@
 <script>
 import LeftArrow from '@/components/common/LeftArrow.vue';
 import RightArrow from '@/components/common/RightArrow.vue';
-import RouteCard from './RouteCard.vue';
+import FullCardWithMarks from '../cards/FullCardWithMarks.vue';
 
- export default {
-    data() {
+export default {
+  data() {
 		return {
-			currentRoute: 1,
-			totalRoutes: 5,
+			currentCard: 1,
+			totalCards: 5,
 			transitionName: 'slide-left',
 		};
 	},
 	components: {
 		RightArrow,
 		LeftArrow,
-		RouteCard
+    FullCardWithMarks
 	},
-    methods: {
-		prevRoute() {
-            if (this.currentRoute > 1) {
+  methods: {
+		prevCard() {
+      if (this.currentCard > 1) {
 				this.transitionName = 'slide-left';
-				this.currentRoute--;
+				this.currentCard--;
 			}
 		},
-		nextRoute() {
-			if (this.currentRoute < this.totalRoutes) {
+		nextCard() {
+			if (this.currentCard < this.totalCards) {
 				this.transitionName = 'slide-right';
-				this.currentRoute++;
+				this.currentCard++;
 			}
 		},
 	},
@@ -55,28 +55,38 @@ import RouteCard from './RouteCard.vue';
 
 .main-text {
 	font-size: 1.5rem;
-	/* color: rgb(55, 55, 55); */
+	color: rgb(231, 206, 206);
 	text-align: center;
 	margin-bottom: 25px;
-	z-index: 3;
 }
 
-.routes {
-	background-color: rgba(231, 247, 247, 0.8);
+.for-vote {
+	/* background-color: rgba(243, 200, 178, 0.7); */
 	box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
 	padding: 20px;
 	border-radius: 10px;
 	margin-bottom: 20px;
+  min-width: 50vw;
+  z-index: 2;
 	/* text-align: center; */
 	/* height: 40vh; */
 	/* justify-content: center; */
 }
 
-.route-controls {
+.vote-controls {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	margin-top: 10px;
+}
+
+.vote-card {
+	background-color: rgb(224, 193, 160);
+	padding: 10px;
+	border-radius: 5px;
+	/* height: 10vh; */
+	/* text-align: center;
+	justify-content: center; */
 }
 
 .slide-left-enter-active,
