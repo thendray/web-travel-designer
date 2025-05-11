@@ -2,11 +2,8 @@
 	<div class="my-card">
 		<div class="photo">
 			<img :src="cardData.photo" alt="фотография" />
-			<!-- <img src="../../assets/image.png" alt="фотография" /> -->
+			
 		</div>
-		<!-- <div class="rating">
-			<span>{{ cardData.rating }}</span>
-		</div> -->
 		<h5 class="name">{{ cardData.name }}</h5>
 		<div class="address">
 			<div>{{ cardData.routePoint.address }}</div>
@@ -19,17 +16,11 @@
 			<span>by {{ cardData.author }}</span>
 			<img :src="iconSrc" alt="icon" class="category-icon" />
 		</div>
-		<div class="deleting">
-			<button @click="deleteFavorite" class="delete-button" >
-				<img src="../../assets/minus.png" alt="icon" class="deleting-icon"/>
-			</button>
-		</div>
+
 	</div>
 </template>
 
 <script>
-
-import axios from 'axios';
 
 const icons = {
   'bed': require('../../assets/bed.png'),
@@ -56,28 +47,6 @@ export default {
 	},
 	created() {
 		this.cardData = this.card;
-	},
-	methods: {
-		deleteFavorite() {
-      axios.delete(`/api/card/favorite/del`, {
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
-        },
-        data: {
-          userId:localStorage.getItem("id"),
-          cardId: this.cardData.id
-        }
-      })
-      .then(response => {
-        console.log(response.data);
-        this.$emit('removeCard', this.cardData.id);
-      })
-      .catch(error => {
-        console.error('Ошибка при получении данных:', error);
-      });
-    }
-
 	},
 };
 </script>
@@ -150,7 +119,6 @@ export default {
   bottom: 8px;
   right: 8px;
 	width: 100%;
-  font-size: 0.9rem;
 	/* min-height: 100px; */
 }
 
@@ -163,47 +131,4 @@ export default {
   height: 36px;
 }
 
-
-.delete-button {
-  display: inline-flex;
-  align-items: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  position: relative;
-  padding: 5px;
-  transition: all 0.3s ease;
-  outline: none;
-}
-
-.delete-button img {
-  transition: transform 0.3s ease;
-}
-
-.deleting {
-  position: absolute;
-  bottom: -7px;
-  left: -7px;
-  background-color: rgb(143, 247, 195);
-  font-weight: bold;
-  border-radius: 50%;
-  padding: 8px;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-}
-
-.deleting:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  background-color: rgb(125, 247, 186);
-}
-
-.deleting-icon {
-  width: 45px;
-  height: 45px;
-}
 </style>

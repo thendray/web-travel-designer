@@ -11,9 +11,9 @@
     <OverlayComp></OverlayComp>
 
     <div class="content">
-      <TableStatistic></TableStatistic>
+      <TableStatistic :id="id"></TableStatistic>
       <div class="rate-card">
-        <VoteComponent></VoteComponent>
+        <VoteComponent :cards="cardsForVote" :route-id="roomId" v-if="cardsForVote.length > 0"></VoteComponent>
       </div>
     </div>
 
@@ -24,6 +24,8 @@
 import OverlayComp from '@/components/common/OverlayComp.vue';
 import TableStatistic from '@/components/vote/TableStatistic.vue';
 import VoteComponent from '@/components/vote/VoteComponent.vue';
+
+import axios from 'axios';
 
 export default {
   props: ["id"],
@@ -43,11 +45,26 @@ export default {
       ],
       currentCardIndex: 0,
       selectedCard: null,
-      roomId: null
+      roomId: null,
+      cardsForVote: []
     };
   },
   created() {
     this.roomId = this.id;
+
+    axios.get(`/api/vote/${this.roomId}/for-vote/${localStorage.getItem("id")}`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+        .then((response) => {
+          this.cardsForVote = response.data;
+          console.log("Response", this.cardsForVote.length);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
   },
   computed: {
     currentCard() {
@@ -143,6 +160,7 @@ nav {
   display: flex;
   justify-content: space-around;
   margin-top: 20px;
+  align-items: flex-start;
 }
 
 .rate-card {

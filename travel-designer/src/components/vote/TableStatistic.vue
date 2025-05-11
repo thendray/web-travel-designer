@@ -18,7 +18,7 @@
     <div v-if="selectedCard" class="modal-overlay" @click="closeModal">
       <div @click.stop>
         <!-- <button class="close-button" @click="closeModal">×</button> -->
-        <FullCardForVote></FullCardForVote>
+        <FullCardForVote :card="selectedCard" :id="id"></FullCardForVote>
       </div>
     </div>
   </div>
@@ -26,7 +26,7 @@
 
 <script>
 import FullCardForVote from '../cards/FullCardForVote.vue';
-
+import axios from 'axios';
 
 const icons = {
   'bed': require('../../assets/bed.png'),
@@ -36,6 +36,7 @@ const icons = {
 };
 
 export default {
+  props: ["id"],
   components: {
     FullCardForVote
   },
@@ -47,43 +48,59 @@ export default {
   },
   created() {
     this.cards = [
-  {
-    id: 1,
-    category: "bed",
-    author: "thendray",
-    rating: "9.0",
-    name: "Отель Метрополь",
-    address: "Театральный пр., 2, Москва, Россия",
-    description: "Исторический отель с роскошными номерами и видом на Большой театр. Идеальное место для отдыха в центре Москвы.",
-    photo: require("../../assets/mock/4.png"),
-    x: 37.620393,
-    y: 55.757399
-  },
-  {
-    id: 2,
-    category: "food",
-    author: "thendray",
-    rating: "9.2",
-    name: "Ресторан White Rabbit",
-    address: "Смоленская пл., 3, Москва, Россия",
-    description: "Высокая кухня с панорамным видом на город. Ресторан White Rabbit предлагает авторские блюда от шеф-повара Владимира Мухина.",
-    photo: require("../../assets/mock/5.png"),
-    x: 37.582645,
-    y: 55.747499
-  },
-  {
-    id: 3,
-    category: "entertainment",
-    author: "thendray",
-    rating: "8.7",
-    name: "Московский планетарий",
-    address: "Садово-Кудринская ул., 5, стр. 1, Москва, Россия",
-    description: "Интерактивные выставки и шоу на куполе Московского планетария подарят незабываемые впечатления и знания о космосе.",
-    photo: require("../../assets/mock/6.png"),
-    x: 37.585223,
-    y: 55.763641
-  }
-];
+        // {
+        //   id: 1,
+        //   category: "bed",
+        //   author: "thendray",
+        //   rating: "9.0",
+        //   name: "Отель Метрополь",
+        //   address: "Театральный пр., 2, Москва, Россия",
+        //   description: "Исторический отель с роскошными номерами и видом на Большой театр. Идеальное место для отдыха в центре Москвы.",
+        //   photo: require("../../assets/icon.jpeg"),
+        //   x: 37.620393,
+        //   y: 55.757399
+        // },
+        // {
+        //   id: 2,
+        //   category: "food",
+        //   author: "thendray",
+        //   rating: "9.2",
+        //   name: "Ресторан White Rabbit",
+        //   address: "Смоленская пл., 3, Москва, Россия",
+        //   description: "Высокая кухня с панорамным видом на город. Ресторан White Rabbit предлагает авторские блюда от шеф-повара Владимира Мухина.",
+        //   photo: require("../../assets/mock/5.png"),
+        //   x: 37.582645,
+        //   y: 55.747499
+        // },
+        // {
+        //   id: 3,
+        //   category: "entertainment",
+        //   author: "thendray",
+        //   rating: "8.7",
+        //   name: "Московский планетарий",
+        //   address: "Садово-Кудринская ул., 5, стр. 1, Москва, Россия",
+        //   description: "Интерактивные выставки и шоу на куполе Московского планетария подарят незабываемые впечатления и знания о космосе.",
+        //   photo: require("../../assets/mock/6.png"),
+        //   x: 37.585223,
+        //   y: 55.763641
+        // }
+      ];
+      axios.get(`/api/route/${this.id}/cards`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        console.log(`response ${response.data}`)
+        // this.loading = false;
+        this.cards = response.data.cards;
+      })
+      .catch(error => {
+        // this.error = 'Не удалось загрузить данные маршрута';
+        console.error('Ошибка при получении данных:', error);
+        // this.loading = false;
+      }); 
   },
   methods: {
     openModal(card) {
@@ -109,11 +126,12 @@ export default {
   max-height: 80vh;
   overflow-y: auto;
   z-index: 4;
+  min-height: 80vh;
 }
 
 .main-text {
 	font-size: 1.5rem;
-	/* color: rgb(55, 55, 55); */
+	color: rgb(56, 10, 10);
 	text-align: center;
 	margin-bottom: 25px;
 	/* z-index: 2; */
@@ -160,7 +178,6 @@ export default {
   color: #ffa500;
 }
 
-/* Стили для модального окна */
 .modal-overlay {
   position: fixed;
   top: 0;

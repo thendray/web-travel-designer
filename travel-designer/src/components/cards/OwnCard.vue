@@ -2,7 +2,6 @@
 	<div class="my-card">
 		<div class="photo">
 			<img :src="cardData.photoUrl" alt="фотография" />
-			<!-- <img src="../../assets/image.png" alt="фотография" /> -->
 		</div>
 		<div class="rating">
 			<span>{{ cardData.rating }}</span>
@@ -74,7 +73,7 @@ export default {
     rgba(188, 167, 251, 0.85), rgba(168, 248, 175, 0.85)
     );
   border-radius: 12px; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Небольшая тень */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
   padding: 16px;
   width: 300px;
   position: relative;
@@ -85,8 +84,9 @@ export default {
 
 .photo img {
   width: 100%;
-  border-radius: 8px; /* Скругленные углы изображения */
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Небольшая тень */
+  border-radius: 8px; 
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+  max-height: 40vh;
 }
 
 

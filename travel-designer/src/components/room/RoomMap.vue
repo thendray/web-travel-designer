@@ -6,7 +6,7 @@
       </div>
       <div class="day-selector">
         <div class="main-text">День № {{ day }}</div>
-        <select v-model.number="day" id="daySelector"> </select>
+        <select v-model.number="day" id="daySelector" @change="handleDayChange"> </select>
       </div>
       <div class="arrow">
         <RightArrow @click="nextDay"></RightArrow>
@@ -25,6 +25,7 @@
   </template>
   
 <script>
+// import FullCard from '../cards/FullCard.vue';
 import LeftArrow from '../common/LeftArrow.vue'
 import RightArrow from '../common/RightArrow.vue';
 import RoutePoints from './RoutePoints.vue';
@@ -45,7 +46,9 @@ export default {
           filterButtons: [], 
           showAllButton: null,
           categories: [ {ru:"отель", en: "bed"}, {ru: "развлечения", en: "entertainment"}, {ru: "еда", en: "food"}, {ru: "другое", en: "question"}],
-          filterPoints: []
+          filterPoints: [],
+          extraPoint: null,
+          showExtra: true
         };
     },
     props: {
@@ -61,54 +64,10 @@ export default {
     components: {
         LeftArrow,
         RightArrow,
-        RoutePoints
+        RoutePoints,
+        // FullCard
     },
     created() {
-//       this.points = [
-//   {
-//     id: 1,
-//     category: "bed",
-//     author: "thendray",
-//     rating: "9.0",
-//     name: "Отель Метрополь",
-//     description: "Исторический отель с роскошными номерами и видом на Большой театр. Идеальное место для отдыха в центре Москвы.",
-//     photoUrl: require("../../assets/mock/4.png"),
-//     routePoint: {
-//       y: 37.620393,
-//       x: 55.757399,
-//       address: "Театральный пр., 2, Москва, Россия",
-//     }
-//   },
-//   {
-//     id: 2,
-//     category: "food",
-//     author: "thendray",
-//     rating: "9.2",
-//     name: "Ресторан White Rabbit",
-//     description: "Высокая кухня с панорамным видом на город. Ресторан White Rabbit предлагает авторские блюда от шеф-повара Владимира Мухина.",
-//     photoUrl: require("../../assets/mock/5.png"),
-//     routePoint: {
-//       y: 37.582645,
-//       x: 55.747499,
-//       address: "Смоленская пл., 3, Москва, Россия",
-//     }
-//   },
-//   {
-//     id: 3,
-//     category: "entertainment",
-//     author: "thendray",
-//     rating: "8.7",
-//     name: "Московский планетарий",
-//     address: "Садово-Кудринская ул., 5, стр. 1, Москва, Россия",
-//     description: "Интерактивные выставки и шоу на куполе Московского планетария подарят незабываемые впечатления и знания о космосе.",
-//     photoUrl: require("../../assets/mock/6.png"),
-//     routePoint: {
-//       y: 37.585223,
-//       x: 55.763641,
-//       address: "Садово-Кудринская ул., 5, стр. 1, Москва, Россия",
-//     }
-//   }
-// ];
       this.fetchData();
     },
     mounted() {
@@ -143,6 +102,11 @@ export default {
       }
     },
     methods: {
+      handleDayChange() {
+        console.log('Выбран день:', this.day);
+        
+        this.fetchData();
+      },
       fetchData() {
         axios.get(`/api/route/${this.id}/details/${this.day}`, {
         headers: {
@@ -154,7 +118,8 @@ export default {
         this.points = response.data.pointNamesInOrder;
         console.log(`response ${this.points}`);
         this.filterPoints = this.points;
-      localStorage.setItem('currentDay', this.day);
+        localStorage.setItem('currentDay', this.day);
+        this.extraPoint = response.data.extraPoint;
       })
       .catch(error => {
         this.error = 'Не удалось загрузить данные маршрута';
@@ -208,19 +173,65 @@ export default {
 
       updatePlacemarks() {
         if (!map) return;
-        
-        // Очищаем существующие метки
        
         map.geoObjects.removeAll();
         
-        
-        // Добавляем новые метки
         this.filterPoints.forEach((point, index) => {
+          const balloonContent = `
+  <style scoped>
+    .c-my-card {
+      background: linear-gradient(to bottom right, rgba(167, 202, 252, 0.85), rgba(181, 249, 253, 0.85));
+      border-radius: 12px; 
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .c-name {
+      font-weight: bold;
+      margin: 8px 0 4px;
+    }
+    .c-address {
+      margin-bottom: 8px;
+      font-style: italic;
+      color: #333;
+    }
+    .c-description {
+      max-height: 10vh;
+      overflow-y: auto;
+      margin-top: 4px;
+      margin-bottom: 16px;
+    }
+    .c-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 100%;
+    }
+    .c-footer span {
+      margin-right: 8px;
+    }
+  </style>
+  <div class="c-my-card">
+    <h5 class="c-name">${point.name}</h5>
+    <p class="c-address">${point.routePoint.address}</p>
+    <div class="c-description">
+      <p>${point.description}</p>
+    </div>
+    <div class="c-footer">
+      <span>by ${point.author}</span>
+    </div>
+  </div>
+`;
+
           const placemark = this.createNumberedPlacemark(
             point,
             index + 1,
             {
-              balloonContent: point.name || '',
+              balloonContent: balloonContent,
               hintContent: point.name + ` Точка ${index + 1}`,
               category: point.category
             }
@@ -229,8 +240,31 @@ export default {
           map.geoObjects.add(placemark);
           this.placemarks.push(placemark);
         });
+
+        if (this.extraPoint && this.showExtra) {
+          const extraPlacemark = new window.ymaps.Placemark(
+            [this.extraPoint.x, this.extraPoint.y],
+            {
+              balloonContent: `${this.extraPoint.address}`,
+              hintContent: '✈️ Отправная точка путешествия',
+              iconContent: '✈️' 
+            },
+            {
+              iconLayout: 'default#imageWithContent',
+              iconContentLayout: window.ymaps.templateLayoutFactory.createClass(
+                  '<div style="font-size: 24px;">$[properties.iconContent]</div>'
+              ),
         
-        // Если есть точки, устанавливаем зум чтобы все точки были видны
+              iconImageHref: '',  
+              iconImageSize: [50, 50],
+              iconImageOffset: [-20, -20]
+              
+            }
+          );
+          
+          map.geoObjects.add(extraPlacemark);
+        }
+        
         if (this.filterPoints.length > 0) {
           map.setBounds(map.geoObjects.getBounds(), {
             checkZoomRange: true,
@@ -241,7 +275,6 @@ export default {
 
       createNumberedPlacemark(point, number, properties = {}) {
 
-        // Определяем цвет в зависимости от типа точки
         const colors = {
           'food': '#FF5252',
           'bed': '#4285F4',
@@ -251,7 +284,6 @@ export default {
 
         const color = colors[point.category] || '#4285F4';
 
-        // И используем в макете
         const CustomNumberIconContentLayout = window.ymaps.templateLayoutFactory.createClass(
           '<div style="background-color: ' + color + '; color: #fff; font-weight: bold; ' +
           'border-radius: 50%; width: 24px; height: 24px; line-height: 24px; ' + 
@@ -259,19 +291,15 @@ export default {
         );
         
         return new window.ymaps.Placemark([point.routePoint.xCoord, point.routePoint.yCoord], 
-          // Содержимое балуна и иконки
           {
             ...properties,
             iconContent: number.toString()
           }, 
-          // Опции метки
           {
-            // Используем кастомный макет для содержимого метки
             iconLayout: 'default#imageWithContent',
-            iconImageHref: '', // Прозрачная 1x1 px картинка
+            iconImageHref: '',
             iconImageSize: [24, 24],
             iconImageOffset: [-12, -12],
-            // Макет содержимого иконки
             iconContentLayout: CustomNumberIconContentLayout
           }
         );
@@ -280,10 +308,8 @@ export default {
       drawRoute() {
         if (this.points.length < 2) return;
         
-        // Собираем координаты всех точек
-        const coordinates = this.points.map(point => [point.routePoint.xCoord, point.routePoint.yCoord]);
+        const coordinates = this.filterPoints.map(point => [point.routePoint.xCoord, point.routePoint.yCoord]);
         
-        // Создаем ломаную линию
         const polyline = new window.ymaps.Polyline(coordinates, {}, {
           strokeColor: '#1976D2',
           strokeWidth: 4,
@@ -301,53 +327,91 @@ export default {
       addFilterButtonsToMap() {
         if (!map) return;
         
-        // Очищаем массив кнопок фильтров
         this.filterButtons = [];
-        const ButtonLayout = window.ymaps.templateLayoutFactory.createClass([
-           
-        ].join(''));
         
-
-        // Добавляем кнопки для каждой категории
+        const colors = {
+          'food': '#FF5252',
+          'bed': '#4285F4',
+          'entertainment': '#43A047',
+          'question': '#c543f4'
+        };
+        
         this.categories.forEach((category, index) => {
-        
-          
+          const buttonColor = colors[category.en] || '#FF5252';
+
+          const styleNormal = `
+            border-radius: 10px;
+            padding: 4px 14px;
+            margin: 2px 4px 0 0;
+            font-size: 15px;
+            font-family: inherit;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: 400;
+            background-color: ${buttonColor};
+            box-shadow: 0 2px 7px rgba(60,60,90,.11);
+            transition: box-shadow 0.12s, background-color 0.14s, color 0.14s;
+            outline: none;
+            letter-spacing: 0.3px;
+            user-select: none;
+          `;
+
+          const styleSelected = `
+            border-radius: 10px;
+            padding: 4px 14px;
+            margin: 2px 4px 0 0;
+            font-size: 15px;
+            font-family: inherit;
+            color: #363636;
+            border: 1.2px solid #d1d1d1;
+            cursor: pointer;
+            font-weight: 400;
+            background-color: #f4f4f6;
+            box-shadow: none;
+            outline: none;
+            letter-spacing: 0.3px;
+            user-select: none;
+          `;
+
+          const CategoryButtonLayout = window.ymaps.templateLayoutFactory.createClass(
+            `<button style="{% if state.selected %}${styleSelected}{% else %}${styleNormal}{% endif %}">
+              {{ data.content }}
+            </button>`
+          );
+
           const button = new window.ymaps.control.Button({
             data: {
-              content: category.ru
+              content: category.ru,
+              color: buttonColor
             },
             options: {
               selectOnClick: true,
-              selected: true, // Изначально все категории видимы
+              selected: true,
               float: 'left',
               floatIndex: 100 + index,
-              layaout: ButtonLayout
+              layout: CategoryButtonLayout
             }
           });
           
-          // Сохраняем категорию в свойствах кнопки
           button.category = category;
           
-          // Добавляем обработчик клика
+          button.categoryColor = buttonColor;
+
           button.events.add('click', () => {
             if (button.isSelected()) {
-              // Если кнопка выбрана, показываем точки этой категории
               this.showPointsByCategory(category);
             } else {
-              // Если кнопка не выбрана, скрываем точки этой категории
               this.hidePointsByCategory(category);
             }
           });
           
-          // Добавляем кнопку на карту
           map.controls.add(button);
           this.filterButtons.push(button);
         });
       },
 
-      // Показать точки определенной категории
       showPointsByCategory(category) {
-        // Находим точки этой категории, которые еще не отображены
 
         const toShow = this.points.filter(point => 
           point.category === category.en
@@ -358,35 +422,36 @@ export default {
         )
 
         console.log(this.filterPoints);
+
+        if (category.en == 'question') {
+          this.showExtra = true;
+        }
         
         this.updatePlacemarks();
       },
 
-      // Скрыть точки определенной категории
       hidePointsByCategory(category) {
-        console.log("hide", category)
-
         this.filterPoints = this.filterPoints.filter(point =>
           point.category !== category.en
         )
-
-        console.log(this.filterPoints);
+        if (category.en == 'question') {
+          this.showExtra = false;
+        }
         
         this.updatePlacemarks();
       },
 
       updateMapBounds() {
         if (this.placemarks.length > 0) {
-          // Устанавливаем границы карты
+
           map.setBounds(map.geoObjects.getBounds(), {
             checkZoomRange: true,
             zoomMargin: 10
           }).then(() => {
-            // После установки границ проверяем текущий zoom
+
             const currentZoom = map.getZoom();
             const maxZoom = 18;
             
-            // Если текущий zoom больше максимально допустимого, уменьшаем его
             if (currentZoom > maxZoom) {
               map.setZoom(maxZoom);
             }
@@ -395,7 +460,10 @@ export default {
       },
 
       detailedRoute() {
-        const formattedPairs = this.filterPoints.map(point => `${point.routePoint.xCoord}%2C${point.routePoint.yCoord}`);
+        var formattedPairs = this.filterPoints.map(point => `${point.routePoint.xCoord}%2C${point.routePoint.yCoord}`);
+        // if (this.extraPoint && this.showExtra) {
+        //   formattedPairs = [`${this.extraPoint.x}%2C${this.extraPoint.y}`].concat(formattedPairs)
+        // }
         const urlPart = formattedPairs.join('~');
 
         const url = `https://yandex.ru/maps/?ll=&mode=routes&rtext=${urlPart}&rtt=pd&ruri=~&source=serp_navig`;
@@ -404,7 +472,7 @@ export default {
       },
       addPointToRoute() {
         this.fetchData();
-      }
+      },
     }
 };
 </script>
@@ -525,7 +593,7 @@ select {
   /* height: 100px; */
   /* max-height: 100px;
   overflow-y: auto; */
-
 }
+
 
 </style>

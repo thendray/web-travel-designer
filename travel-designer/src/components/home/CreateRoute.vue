@@ -4,7 +4,6 @@
     <button class="create-button" @click="createRoute">создать</button>
     <button class="create-button" @click="showJoinModal = true">присоединиться к созданию</button>
 
-    <!-- Модальное окно для присоединения к комнате -->
     <div v-if="showJoinModal" class="modal">
       <div class="modal-content">
         <span class="close-button" @click="showJoinModal = false">&times;</span>
@@ -66,14 +65,14 @@ export default {
         routePassword: this.roomCredentials.password
       };
 
-      axios.post('/api/route/login', formData, {
+      axios.post('/api/route/join', formData, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('jwt')}`
           }
         })
         .then(response => {
           this.showJoinModal = false;
-          alert(`Вы успешно присоединились к комнате ${response.data.routeId}`);
+          // alert(`Вы успешно присоединились к комнате ${response.data.routeId}`);
           this.$router.push(`/route-room/${response.data.routeId}`);
         
         })
@@ -127,7 +126,6 @@ export default {
   color: rgb(51, 51, 51);
 }
 
-/* Стили для модального окна */
 .modal {
   position: fixed;
   top: 0;

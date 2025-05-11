@@ -1,7 +1,7 @@
 <template>
 	<div class="my-card">
 		<div class="photo">
-			<img :src="cardData.photoUrl" alt="фотография" />
+			<img :src="cardData.photo" alt="фотография" />
 		</div>
 		<h3 class="name">{{ cardData.name }}</h3>
 		<p class="address">{{ cardData.address }}</p>
@@ -27,6 +27,7 @@
 
 
 <script>
+import axios from 'axios';
 
 const icons = {
   'bed': require('../../assets/bed.png'),
@@ -52,16 +53,35 @@ export default {
 	},
   computed: {
     iconSrc() {
-      return icons[this.cardData.icon] || '';
+      return icons[this.cardData.category] || '';
     }
   },
 	methods: {
     toggleLike() {
       if (!this.isLiked) {
-        this.isLiked = true;
-        
-        this.showToastMessage();
+        this.addFavorite();
       }
+    },
+    addFavorite() {
+      const request = {
+        userId: localStorage.getItem("id"),
+        cardId: this.cardData.id
+      }
+      axios.post(`/api/card/favorite/add`, request, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+        .then((response) => {
+          console.log("Response", response);
+          this.isLiked = true;
+        
+          this.showToastMessage();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     showToastMessage() {
       this.showToast = true;
@@ -81,7 +101,7 @@ export default {
 .my-card {
 	background: linear-gradient(to bottom right, rgba(167, 202, 252, 0.85), rgba(181, 249, 253, 0.85));
   border-radius: 12px; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Небольшая тень */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
   padding: 16px;
   width: 300px;
   position: relative;
@@ -92,8 +112,8 @@ export default {
 
 .photo img {
   width: 100%;
-  border-radius: 8px; /* Скругленные углы изображения */
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Небольшая тень */
+  border-radius: 8px; 
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
 }
 
 .name {
@@ -170,6 +190,7 @@ export default {
   position: relative;
   padding: 5px;
   transition: all 0.3s ease;
+  outline: none;
 }
 
 .like-button img {

@@ -6,7 +6,7 @@
 				<LeftArrow @click="prevRoute"></LeftArrow>
 			</div>
 			<transition :name="transitionName" mode="out-in">
-				<RouteCard :key="currentRoute"></RouteCard>
+				<RouteCard :key="currentRoute" :route="routes[currentRoute-1]" v-if="routes[0]"></RouteCard>
 				<!-- <div class="route" :key="currentRoute">маршрут {{ currentRoute }}</div> -->
 			</transition>
 			<div class="arrow">
@@ -21,12 +21,15 @@ import LeftArrow from '@/components/common/LeftArrow.vue';
 import RightArrow from '@/components/common/RightArrow.vue';
 import RouteCard from './RouteCard.vue';
 
+import axios from 'axios';
+
  export default {
     data() {
 		return {
 			currentRoute: 1,
 			totalRoutes: 5,
 			transitionName: 'slide-left',
+			routes: []
 		};
 	},
 	components: {
@@ -34,9 +37,25 @@ import RouteCard from './RouteCard.vue';
 		LeftArrow,
 		RouteCard
 	},
-    methods: {
+	created() {
+		axios.get(`/api/recommendation/route/${localStorage.getItem("id")}`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+        .then((response) => {
+          console.log("Response", response);
+          this.routes = response.data.routes;
+          this.totalRoutes = this.routes.length;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+	},
+  methods: {
 		prevRoute() {
-            if (this.currentRoute > 1) {
+      if (this.currentRoute > 1) {
 				this.transitionName = 'slide-left';
 				this.currentRoute--;
 			}
@@ -67,6 +86,7 @@ import RouteCard from './RouteCard.vue';
 	padding: 20px;
 	border-radius: 10px;
 	margin-bottom: 20px;
+	min-height: 30vh;
 	/* text-align: center; */
 	/* height: 40vh; */
 	/* justify-content: center; */

@@ -8,7 +8,7 @@
 			<span>{{ cardData.rating }}</span>
 		</div>
 		<h5 class="name">{{ cardData.name }}</h5>
-		<p class="address">{{ cardData.address }}</p>
+		<p class="address">{{ cardData.routePoint.address }}</p>
 		<div class="description">
 			<p>{{ cardData.description }}</p>
 		</div>
@@ -66,7 +66,7 @@ export default {
 .my-card {
   background: linear-gradient(to bottom right, rgba(203, 249, 213, 0.85), rgba(230, 248, 234, 0.85));
   border-radius: 12px; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Небольшая тень */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 16px;
   width: 200px;
   position: relative;
@@ -76,8 +76,9 @@ export default {
 
 .photo img {
   width: 100%;
-  border-radius: 8px; /* Скругленные углы изображения */
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Небольшая тень */
+  border-radius: 8px; 
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+  max-height: 25vh;
 }
 
 .rating {
@@ -105,6 +106,7 @@ export default {
   margin-bottom: 8px;
 	font-style: italic;
   color: #333;
+  font-size: 0.8rem;
 }
 
 .description {
@@ -112,6 +114,7 @@ export default {
   overflow-y: auto;
   /* margin-top: 5px; */
   margin-bottom: 22px;
+  font-size: 0.92rem;
 }
 
 .footer {

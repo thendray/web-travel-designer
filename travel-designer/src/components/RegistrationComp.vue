@@ -46,13 +46,32 @@ export default {
       step: 1,
       name: '',
       file: null,
-      errorMessage: null
+      errorMessage: null,
+      defImage: null
     };
   },
   components: {
     OverlayComp
   },
+  created() {
+    this.defaultImage();
+  },
   methods: {
+    defaultImage() {
+      const imagePath = require("../assets/icon.jpeg");
+      fetch(imagePath)
+        .then(response => response.blob())
+        .then(blob => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            this.defImage = event.target.result;
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch(error => {
+          console.error("Error loading image:", error);
+        });
+    },
     nextStep() {
       if (this.password !== this.confirmPassword) {
         this.errorMessage = 'Пароли не совпадают';
@@ -90,7 +109,7 @@ export default {
         email: this.email,
         username: this.name,
         password: this.password,
-        profilePhoto: this.file 
+        profilePhoto: this.file || this.defImage
       };
       console.log(formData);
       // localStorage.setItem("id", 2);
@@ -101,7 +120,6 @@ export default {
         const response = axios.post('/api/users/sign-up', formData)
           .then((response) => {
             console.log("Response", response);
-            // Перенаправление пользователя на домашнюю страницу
             localStorage.setItem("isAuth", true);
 
             const userData = response.data;

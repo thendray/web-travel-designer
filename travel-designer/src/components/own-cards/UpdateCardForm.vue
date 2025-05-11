@@ -61,8 +61,7 @@
           <button type="button" @click="handleSave" >Сохранить</button>
           <button type="button" @click="handleClose" class="del">Отмена</button>
         </div>
-  
-        <!-- Подключаем модальное окно для алерта -->
+
         <AlertModal v-if="showAlert" :message="alertMessage" @close="handleClose" />
       </div>
     </div>
@@ -120,7 +119,6 @@ export default {
 
       const fetchData = async () => {
         try {
-          // Используем props.id для запроса
           const response = await axios.get(`/api/card/${props.cardId}`, {
             headers: {
               'accept': 'application/json',
@@ -198,14 +196,44 @@ export default {
       }
   
       function handleSave() {
-        console.log('Данные формы:', name.value, description.value, imageUrl.value);
-        alertMessage.value = 'Данные сохранены!';
-        showAlert.value = true;
+        const userId = localStorage.getItem('id') || 2;
+        var p = imageUrl.value;
+        if (cardData.value.photo == imageUrl.value) {
+          p = null;
+        }
+      
+        const formData = {
+          cardId: props.cardId,
+          authorId: userId,
+          routeId: props.id || 4,
+          name: name.value,
+          xCoord: taskCoords.value[0],
+          yCoord: taskCoords.value[1],
+          description: description.value,
+          photo: p,
+          address: address.value,
+          category: categories[selectedCategory.value].serverName
+        }
+        // const rawFormData = toRaw(formData);
+        axios.put('/api/card/update', formData, {
+            headers: {
+              'accept': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+            }
+          })
+            .then((response) => {
+              console.log("Response", response);
+              alertMessage.value = 'Данные сохранены!';
+              showAlert.value = true;
+            })
+            .catch((error) => {
+              console.log(error);
+            });
       }
   
       function handleClose() {
         showAlert.value = false;
-        emit('update-adding-new-card');
+        emit('update-adding-new-card', props.cardId);
       }
   
       function handleFind() {
@@ -216,12 +244,10 @@ export default {
             function(res) {
               console.log("запрос: ", address, "ответ: ", res.geoObjects);
               res.geoObjects.events
-                    // При наведении на метку показываем хинт с названием станции метро.
                     .add('mouseenter', function (event) {
                         var geoObject = event.get('target');
                         map.hint.open(geoObject.geometry.getCoordinates(), geoObject.getAddressLine());
                     })
-                    // Скрываем хинт при выходе курсора за пределы метки.
                     .add('mouseleave', function () {
                         map.hint.close(true);
                     })
@@ -317,15 +343,15 @@ export default {
   }
   
   .content-this {
-    display: flex; /* Используем Flexbox */
-    gap: 20px; /* Отступ между формой и картой */
+    display: flex; 
+    gap: 20px; 
     padding-bottom: 10px;
   }
   
   .form-fields {
-    flex: 2; /* Занимает оставшееся пространство */
+    flex: 2; 
     display: flex;
-    flex-direction: column; /* Поля располагаются вертикально */
+    flex-direction: column; 
   }
   
   .form-fields input {
@@ -336,7 +362,7 @@ export default {
   }
   
   .map-container {
-    flex: 5; /* Карта занимает больше места */
+    flex: 5; 
     /* height: 400px;  */
     box-sizing: border-box;
     width: 100%; 
@@ -439,7 +465,7 @@ export default {
   }
   
   .image-preview img {
-    max-width: 150px; /* Задайте подходящий размер */
+    max-width: 150px;
     max-height: 150px;
     margin-top: 10px;
   }

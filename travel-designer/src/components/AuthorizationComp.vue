@@ -39,7 +39,6 @@ export default {
       return emailRegex.test(email);
     },
     login() {
-      // логика авторизации, возможно, через API
       console.log(`Email: ${this.email}, Password: ${this.password}`);
       
       if(!this.validateEmail(this.email)) {
@@ -62,7 +61,6 @@ export default {
         const response = axios.post('/api/users/login', formData)
           .then((response) => {
             console.log("Response", response);
-            // Перенаправление пользователя на домашнюю страницу
             localStorage.setItem("isAuth", true);
 
             const userData = response.data;
@@ -83,11 +81,9 @@ export default {
       }
     },
     register() {
-      // логика перехода на страницу регистрации
       alert("Переход на страницу регистрации");
     },
     goHome() {
-      // логика перехода на главную страницу
       alert("Переход на главную страницу");
     },
   },

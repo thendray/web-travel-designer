@@ -22,6 +22,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   props: ['login', 'password', 'name', 'dayCount', 'cardMax', 'id'],
   data() {
@@ -61,10 +63,50 @@ export default {
       this.showModal = true;
     },
     saveChange() {
+      var request;
       if (this.currentField) {
         this.fields[this.currentField] = this.newValue;
+        if (this.currentField == 'Логин комнаты') {
+          request = {
+            routeId: this.roomId,
+            login: this.newValue
+          }
+        } else if (this.currentField == 'Пароль комнаты') {
+          request = {
+            routeId: this.roomId,
+            password: this.newValue
+          }
+        } else if (this.currentField == 'Название путешествия') {
+          request = {
+            routeId: this.roomId,
+            login: this.newValue
+          }
+        } else if (this.currentField == 'Количество дней') {
+          request = {
+            routeId: this.roomId,
+            days: this.newValue
+          }
+        } else if (this.currentField == 'Количество карточек') {
+          request = {
+            routeId: this.roomId,
+            cardLimit: this.newValue
+          }
+        }
       }
-      this.showModal = false;
+
+      axios.put(`/api/route/update`, request, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        console.log(`response ${response.data}`);
+        this.showModal = false;
+      })
+      .catch(error => {
+        console.error('Ошибка при получении данных:', error);
+      });
     },
     cancelChange() {
       this.showModal = false;

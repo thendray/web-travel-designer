@@ -3,11 +3,12 @@
       <div class="header">
         <div class="main-text">Карточки Вашего Путешествия</div>
         <div class="button-container">
-            <button class="filter-btn">фильтры</button>
+            <!-- <button class="filter-btn">фильтры</button> -->
+             <CardFilter :cards=cards v-if="cards" @filtered="filtered"></CardFilter>
         </div>
       </div>
       <div class="cards">
-        <div v-for="n in cards" :key="n" class="card">
+        <div v-for="n in filterCards" :key="n" class="card">
           <FullCardForRoom :card="n" @add-point="addPointToRoute"></FullCardForRoom>
         </div>
       </div>
@@ -17,17 +18,20 @@
 
 import axios from 'axios';
 import FullCardForRoom from '../cards/FullCardForRoom.vue';
+import CardFilter from './CardFilter.vue';
 
 
 export default {
   props: ['id'],
   components: {
-    FullCardForRoom
+    FullCardForRoom,
+    CardFilter
   },
   data() {
     return {
       cardIds: [],
-      cards: null
+      cards: null,
+      filterCards: []
     }
   },
   created() {
@@ -82,6 +86,7 @@ export default {
         console.log(`response ${response.data}`)
         // this.loading = false;
         this.cards = mock.concat(response.data.cards)
+        this.filterCards = this.cards;
       })
       .catch(error => {
         this.cards = mock;
@@ -91,6 +96,9 @@ export default {
       });
   },
   methods: {
+    filtered(filterCards) {
+      this.filterCards = filterCards;
+    },
     addPointToRoute(cardId) {
       console.log("add point to route", cardId);
       const request = {

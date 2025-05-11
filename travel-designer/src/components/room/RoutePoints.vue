@@ -30,7 +30,6 @@
       </li>
     </ul>
 
-    <!-- Модальное окно -->
     <div v-if="showModal" class="modal">
       <div class="modal-content">
         <span class="close-button" @click="showModal = false">&times;</span>
@@ -254,7 +253,6 @@ button:hover {
   transform: translateY(-50%) scale(1.1);
 }
 
-/* Стили для модального окна */
 .modal {
   position: fixed;
   top: 0;

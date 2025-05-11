@@ -6,8 +6,12 @@
 				<LeftArrow @click="prevCard"></LeftArrow>
 			</div>
 			<transition :name="transitionName" mode="out-in">
-        <FullCardWithMarks :card-id=currentCard :key="currentCard"></FullCardWithMarks>
-				<!-- <div class="vote-card" :key="currentCard">Карточка {{ currentCard }}</div> -->
+      <FullCardWithMarks 
+        @next-for-vote="nextForVote"
+        :card=currentCard 
+        :route-id="routeId" 
+        :key="currentCard.id" 
+        v-if="currentCard"></FullCardWithMarks>
 			</transition>
 			<div class="arrow">
 				<RightArrow @click="nextCard"></RightArrow>
@@ -22,32 +26,55 @@ import RightArrow from '@/components/common/RightArrow.vue';
 import FullCardWithMarks from '../cards/FullCardWithMarks.vue';
 
 export default {
-  data() {
-		return {
-			currentCard: 1,
-			totalCards: 5,
-			transitionName: 'slide-left',
-		};
-	},
-	components: {
+  components: {
 		RightArrow,
 		LeftArrow,
     FullCardWithMarks
 	},
+	props: {
+		cards: {
+			required: true
+		},
+		routeId: {
+			required: true
+		}
+	},
+  data() {
+		return {
+			currentCard: null,
+      curIndex: 0,
+			totalCards: 5,
+			transitionName: 'slide-left',
+			voteCrads: []
+		};
+	},
+	created() {
+		this.voteCrads = this.cards;
+		this.totalCards = this.voteCrads.length;
+		this.currentCard = this.voteCrads[this.curIndex];
+	},
   methods: {
+		nextForVote(id) {
+			this.voteCrads = this.voteCrads.filter(c => c.id != id);
+			this.totalCards = this.voteCrads.length;
+      this.curIndex = 0;
+      this.currentCard = this.voteCrads[this.curIndex];
+		},
 		prevCard() {
-      if (this.currentCard > 1) {
+      if (this.curIndex > 0) {
 				this.transitionName = 'slide-left';
-				this.currentCard--;
+				this.curIndex--;
+        this.currentCard = this.voteCrads[this.curIndex];
 			}
 		},
 		nextCard() {
-			if (this.currentCard < this.totalCards) {
+			if (this.curIndex + 1 < this.totalCards) {
 				this.transitionName = 'slide-right';
-				this.currentCard++;
+				this.curIndex++;
+        this.currentCard = this.voteCrads[this.curIndex];
 			}
 		},
-	},
+	}
 }
 </script>
 
@@ -67,6 +94,7 @@ export default {
 	border-radius: 10px;
 	margin-bottom: 20px;
   min-width: 50vw;
+	min-height: 50vh;
   z-index: 2;
 	/* text-align: center; */
 	/* height: 40vh; */

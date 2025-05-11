@@ -1,6 +1,5 @@
 <template>
   <div class="travel-card">
-    <!-- Блок с фотографиями -->
     <div class="photo-grid">
       <div
         v-for="(photo, index) in photos"
@@ -17,9 +16,8 @@
       </div>
     </div>
 
-    <!-- Основной контент (информация о путешествии и топ-3 места) -->
     <div class="content">
-      <!-- Информация о путешествии -->
+
       <div class="route-info">
         <h2 class="title">{{ title }}</h2>
         <div class="duration">
@@ -35,7 +33,6 @@
         </div>
       </div>
 
-      <!-- Топ-3 места -->
       <div class="top-places">
         <h3>Топ-3 места</h3>
         <div
@@ -48,7 +45,7 @@
           </div>
           <div class="place-info">
             <div class="place-name">{{ place.name }}</div>
-            <div class="place-address">{{ place.address }}</div>
+            <div class="place-address truncate-text">{{ shortAddress(place.address) }}</div>
           </div>
         </div>
       </div>
@@ -59,59 +56,49 @@
 <script>
 export default {
   props: {
-    photos: {
-      type: Array,
-      default: () => [require('../../assets/mock/4.png'), require('../../assets/mock/5.png'), require('../../assets/mock/6.png')],
-    },
-    title: {
-      type: String,
-      default: "Тестовое путешествие",
-    },
-    duration: {
-      type: Number,
-      default: 10,
-    },
-    startPoint: {
-      type: String,
-      default: "Аэропорт Москвы (SVO)",
-    },
-    endPoint: {
-      type: String,
-      default: "Аэропорт Москвы (DME)",
-    },
-    topPlaces: {
-      type: Array,
-      default: () => [
-        {
-          name: "Отель Метрополь",
-          address: "Театральный пр., 2, Москва, Россия",
-          category: "landmark",
-        },
-        {
-          name: "Ресторан White Rabbit",
-          address: "Смоленская пл., 3, Москва, Россия",
-          category: "neighborhood",
-        },
-        {
-          name: "Московский планетарий",
-          address: "Садово-Кудринская ул., 5, стр. 1",
-          category: "museum",
-        },
-      ],
-    },
+    route: {
+      required: true
+    }
+  },
+  data() {
+    return {
+      photos: [],
+      title: "",
+      duration: "",
+      startPoint: "",
+      endPoint: "",
+      topPlaces: []
+    }
+  },
+  created() {
+    var categories = ["landmark", "neighborhood", "museum"]
+    this.photos = this.route.photos;
+    this.title = this.route.name;
+    this.duration = this.route.days;
+    this.startPoint = this.route.beginAddress;
+    this.endPoint = this.route.endAddress;
+    this.topPlaces = this.route.topPlaces.map((topPlace, index) => {
+      return {
+        name: topPlace.name,
+        address: topPlace.address,
+        category: categories[index % categories.length] 
+      };
+    });
   },
   methods: {
+    shortAddress(address) {
+      return address.length > 20 ? address.slice(0, 20) + '...' : address;
+    },
     getCategoryIcon(category) {
-      // Возвращаем URL иконки в зависимости от категории
       switch (category) {
         case "landmark":
-          return "https://cdn-icons-png.flaticon.com/512/684/684908.png"; // Иконка достопримечательности
+          return "https://cdn-icons-png.flaticon.com/512/684/684908.png";
         case "museum":
-          return "https://cdn-icons-png.flaticon.com/512/684/684822.png"; // Иконка музея
+          return "https://cdn-icons-png.flaticon.com/512/684/684822.png";
         case "neighborhood":
-          return "https://cdn-icons-png.flaticon.com/512/684/684809.png"; // Иконка района
+          return "https://cdn-icons-png.flaticon.com/512/684/684809.png";
         default:
-          return "https://cdn-icons-png.flaticon.com/512/684/684809.png"; // Иконка по умолчанию
+          return "https://cdn-icons-png.flaticon.com/512/684/684809.png";
       }
     },
   },
@@ -156,7 +143,7 @@ export default {
 }
 
 .content {
-  flex: 1; /* Основной контент занимает оставшееся пространство */
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -226,5 +213,12 @@ export default {
 .place-address {
   font-size: 12px;
   color: #666666;
+}
+
+.truncate-text {
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

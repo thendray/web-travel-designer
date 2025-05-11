@@ -1,9 +1,8 @@
 <template>
   <div>
     <div class="my-card">
-      <div class="photo">
-        <!-- <img :src="cardData.photoUrl" alt="фотография" /> -->
-        <img src="../../assets/image.png" alt="фотография" />
+      <div class="my-photo">
+        <img :src="cardData.photoUrl" alt="фотография" />
       </div>
       <h3 class="name">{{ cardData.name }}</h3>
       <p class="address">{{ cardData.address }}</p>
@@ -17,21 +16,21 @@
     </div>
     <div class="controls">
       <button
-        class="rate"
+        class="rate neg"
         :class="{ active: selectedButton === 1 }"
         @click="rateCard('down')"
       >
         👎
       </button>
       <button
-        class="rate"
+        class="rate norm"
         :class="{ active: selectedButton === 2 }"
         @click="rateCard('neutral')"
       >
         🤔
       </button>
       <button
-        class="rate"
+        class="rate good"
         :class="{ active: selectedButton === 3 }"
         @click="rateCard('up')"
       >
@@ -51,12 +50,16 @@ const icons = {
   'question': require('../../assets/question.png')
 };
 
+import axios from 'axios';
+
 export default {
 	props: {
-		cardId: {
-			type: Number,
+		card: {
 			required: true,
 		},
+    routeId: {
+      required: true
+    }
 	},
 	data() {
 		return {
@@ -83,23 +86,14 @@ export default {
 	methods: {
 		async fetchCardData() {
 			this.cardData = {
-				photoUrl: 'auth_background.jpeg',
-				rating: '5.0',
-				name: 'Отель на море',
-				address: 'Турция, Белек',
-				icon: 'food',
-				description: 'Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией Прекрасный отель на берегу моря с песчаным пляжем и отличной анимацией',
-				author: 'thendray'
+				photoUrl: this.card.photo,
+				rating: this.card.rating,
+				name: this.card.name,
+				address: this.card.routePoint.address,
+				icon: this.card.category,
+				description: this.card.description,
+        author: this.card.author
 			}
-			// try {
-			//   const response = await fetch(`https://your-backend-api.com/cards/${this.cardId}`);
-			//   if (!response.ok) {
-			//     throw new Error('Network response was not ok');
-			//   }
-			//   this.cardData = await response.json();
-			// } catch (error) {
-			//   console.error('Error fetching card data:', error);
-			// }
 		},
     rateCard(choice) {
       const choiceToNumber = {
@@ -110,15 +104,33 @@ export default {
 
       const newChoice = choiceToNumber[choice];
 
-      // Если нажата уже выбранная кнопка, сбрасываем выбор
       if (this.selectedButton === newChoice) {
         this.selectedButton = null;
       } else {
         this.selectedButton = newChoice;
       }
 
-      // Здесь можно добавить логику для отправки выбора на сервер
       console.log("Selected Button:", this.selectedButton);
+      const request = {
+        userId: localStorage.getItem("id"),
+        cardId: this.card.id,
+        routeId: this.routeId,
+        mark: newChoice - 1
+      }
+
+      axios.post(`/api/vote/create`, request, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+        .then((response) => {
+          console.log("Response", response.data);
+          this.$emit('nextForVote', this.card.id);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
   }
 };
@@ -129,7 +141,7 @@ export default {
 .my-card {
   background: linear-gradient(to bottom right, rgb(249, 199, 170), rgb(253, 188, 181));
   border-radius: 12px; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Небольшая тень */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
   padding: 16px;
   width: 30vw;
   position: relative;
@@ -137,13 +149,13 @@ export default {
   flex-direction: column;
 }
 
-
-.photo img {
-  width: 100%;
-  border-radius: 8px; /* Скругленные углы изображения */
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Небольшая тень */
+.my-photo img {
+  width: 70%;
+  border-radius: 8px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  margin-top: px;
+  max-height: 40vh;
 }
-
 
 .rating {
   position: absolute;
@@ -163,7 +175,7 @@ export default {
 
 .name {
   font-weight: bold;
-  margin: 16px 0 8px;
+  margin: 16px 0 4px;
 }
 
 .address {
@@ -176,7 +188,7 @@ export default {
   max-height: 10vh;
   overflow-y: auto;
 	margin-top: 8px;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .footer {
@@ -218,17 +230,42 @@ export default {
 
 }
 
-.rate:hover {
-  background-color: #e0e0e0;
+.neg:hover {
+  background-color: #af4c4c;
   transform: scale(1.1);
 }
 
-.rate.active {
-  background-color: #4caf50;
+.norm:hover {
+  background-color: #e0e075;
+  transform: scale(1.1);
+}
+
+.good:hover {
+  background-color: #92e05f;
+  transform: scale(1.1);
+}
+
+.neg.active {
+  background-color: #af4c4c;
   /* border-color: #4caf50; */
   color: white;
   transform: scale(1.1);
 }
+
+.norm.active {
+  background-color: #e0e075;
+  /* border-color: #4caf50; */
+  color: white;
+  transform: scale(1.1);
+}
+
+.good.active {
+  background-color: #92e05f;
+  /* border-color: #4caf50; */
+  color: white;
+  transform: scale(1.1);
+}
+
 
 .rate:active {
   transform: scale(0.95);

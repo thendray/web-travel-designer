@@ -13,7 +13,7 @@
     <div class="main-content">
       <div class="cards-container">
         <div class="cards">
-          <div v-for="(card, index) in cards" :key="index" class="card-container">
+          <div v-for="(card) in cards" :key="card.id" class="card-container">
             <div> 
               <OwnCard :card="card"></OwnCard> 
             </div>
@@ -25,7 +25,12 @@
         </div>
       </div>
       <div class="to-center">
-        <button class="add-button" @click="addCard">создать новую</button>
+        <button class="add-button" @click="addCard" :disabled="cards.length === cardLimit">
+          <div> создать новую {{ cards.length }} / {{ cardLimit }} </div>
+        </button>
+        <button class="add-button" @click="openFavoriteModal" :disabled="cards.length === cardLimit">
+          <div> добавить из изброннаго </div>
+        </button>
       </div>
     </div>
 
@@ -33,7 +38,6 @@
       <CreateCardForm :id="this.roomId" @close-adding-new-card="closeAddingNewCard"></CreateCardForm>
     </div>
 
-    <!-- Модальное окно удаления -->
     <div v-if="showDeleteModal" class="modal">
       <div class="modal-content">
         <p>Вы уверены, что хотите удалить эту карточку?</p>
@@ -44,10 +48,16 @@
       </div>
     </div>
 
-    <!-- Модальное окно редактирования -->
     <div v-if="showEditModal">
       <UpdateCardForm @update-adding-new-card="saveEdit" :card-id="currentCardIndex"></UpdateCardForm>
     </div>
+
+    <ChoseFromFavorite 
+      :route-id="id"
+      :isOpen="isFavoriteModalOpen" 
+      @close="closeFavoriteModal"
+      @card-added="handleCardAdded"
+    />
 
   </div>
   </div>
@@ -61,6 +71,7 @@
 import OwnCard from '@/components/cards/OwnCard.vue';
 import OverlayComp from '@/components/common/OverlayComp.vue';
 import WaitLoading from '@/components/common/WaitLoading.vue';
+import ChoseFromFavorite from '@/components/own-cards/ChoseFromFavorite.vue';
 import CreateCardForm from '@/components/own-cards/CreateCardForm.vue';
 import UpdateCardForm from '@/components/own-cards/UpdateCardForm.vue';
 import axios from 'axios';
@@ -69,49 +80,58 @@ export default {
   props: ["id"],
   data() {
     return {
-      cards: null,
+      cards: [],
       showDeleteModal: false,
       showEditModal: false,
       showCreateModal: false,
       currentCardIndex: null,
       roomId: null,
-      loading: true
+      loading: true,
+      cardLimit: null,
+      isFavoriteModalOpen: false
     }
   },
   created() {
     this.roomId = this.id;
-    const userId = localStorage.getItem('id') || 2;
-    axios.get(`/api/route/${this.roomId}/user-cards/${userId}`, {
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
-        }
-      })
-      .then(response => {
-        this.cards = response.data.cards;
-        console.log(`response ${response.data.cards}`)
-        this.loading = false;
-      })
-      .catch(error => {
-        this.error = 'Не удалось загрузить данные маршрута';
-        console.error('Ошибка при получении данных:', error);
-        this.loading = false;
-      });
+    this.fetchData();
   },
   components: {
     OverlayComp,
     OwnCard,
     CreateCardForm,
     UpdateCardForm,
-    WaitLoading
+    WaitLoading,
+    ChoseFromFavorite
   },
   methods: {
+    fetchData() {
+      const userId = localStorage.getItem('id');
+      axios.get(`/api/route/${this.roomId}/user-cards/${userId}`, {
+          headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+          }
+        })
+        .then(response => {
+          this.cards = response.data.cards;
+          this.cardLimit = response.data.cardLimit;
+          console.log(`response ${response.data.cards}`)
+          this.loading = false;
+        })
+        .catch(error => {
+          this.error = 'Не удалось загрузить данные маршрута';
+          console.error('Ошибка при получении данных:', error);
+          this.loading = false;
+        });
+    },
     addCard() {
       this.showCreateModal = true;
     },
     closeAddingNewCard() {
       console.log("close");
+      this.fetchData();
       this.showCreateModal = false;
+      
     },
     deleteCard(index) {
       this.currentCardIndex = index;
@@ -119,8 +139,21 @@ export default {
     },
     confirmDelete() {
       if (this.currentCardIndex !== null) {
-        this.cards.splice(this.currentCardIndex, 1);
-        this.currentCardIndex = null;
+        console.log("curr card", this.currentCardIndex);
+        axios.delete(`/api/card/${this.currentCardIndex}`, {
+          headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+          }
+        })
+        .then(response => {
+          console.log(response.data);
+          this.cards = this.cards.filter(c => c.id != this.currentCardIndex);
+          this.currentCardIndex = null;
+        })
+        .catch(error => {
+          console.error('Ошибка при получении данных:', error);
+        });
       }
       this.showDeleteModal = false;
     },
@@ -128,13 +161,26 @@ export default {
       this.currentCardIndex = index;
       this.showEditModal = true;
     },
-    saveEdit() {
-      // Логика сохранения изменений
+    saveEdit(id) {
+      this.cards = this.cards.filter(c => c.id != id);
+      this.fetchData();
       this.showEditModal = false;
+      console.log("save edit");
     },
     exit() {
       this.$router.push(`/route-room/${this.roomId}`);
-    }
+    },
+    openFavoriteModal() {
+      this.isFavoriteModalOpen = true;
+    },
+    closeFavoriteModal() {
+      this.isFavoriteModalOpen = false;
+    },
+    handleCardAdded(cardId) {
+      console.log('Добавлена карточка с ID:', cardId);
+      this.isFavoriteModalOpen = false;
+      this.fetchData();
+    },
   },
 }
 </script>
@@ -148,7 +194,7 @@ export default {
   align-items: center; */
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
 
   background-image: url('../assets/cards_background.png');
   background-size: cover;
@@ -212,7 +258,7 @@ nav {
   flex-direction: column; */
   /* margin: 10px; */
   /* max-width: 75vw; */
-
+margin-top: 2vh;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -261,7 +307,7 @@ nav {
   
 .add-button {
   max-width: 30%;
-  margin-top: 5vh;
+  margin: 3vh;
   padding: 10px 20px;
   display: grid;
   justify-items: center;
@@ -274,9 +320,12 @@ nav {
 }
 
 .to-center {
-  display: grid;
   justify-items: center;
   align-items: start;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: center;
 }
 
 button {

@@ -176,10 +176,8 @@ export default {
     }
 
     function handleSave() {
-      const userId = localStorage.getItem('id') || 2;
+      const userId = localStorage.getItem('id');
       const photo = imageUrl.value !== null ? imageUrl.value : defImage.value;
-      console.log("defImage", defImage.value);
-      console.log("photo", photo);
      
       const formData = {
         authorId: userId,
@@ -222,12 +220,10 @@ export default {
           function(res) {
             console.log("запрос: ", address, "ответ: ", res.geoObjects);
             res.geoObjects.events
-                  // При наведении на метку показываем хинт с названием станции метро.
                   .add('mouseenter', function (event) {
                       var geoObject = event.get('target');
                       map.hint.open(geoObject.geometry.getCoordinates(), geoObject.getAddressLine());
                   })
-                  // Скрываем хинт при выходе курсора за пределы метки.
                   .add('mouseleave', function () {
                       map.hint.close(true);
                   })
@@ -323,15 +319,15 @@ export default {
 }
 
 .content-this {
-  display: flex; /* Используем Flexbox */
-  gap: 20px; /* Отступ между формой и картой */
+  display: flex;
+  gap: 20px; 
   padding-bottom: 10px;
 }
 
 .form-fields {
-  flex: 2; /* Занимает оставшееся пространство */
+  flex: 2; 
   display: flex;
-  flex-direction: column; /* Поля располагаются вертикально */
+  flex-direction: column;
 }
 
 .form-fields input {
@@ -342,7 +338,7 @@ export default {
 }
 
 .map-container {
-  flex: 5; /* Карта занимает больше места */
+  flex: 5; 
   /* height: 400px;  */
   box-sizing: border-box;
   width: 100%; 
@@ -402,7 +398,7 @@ label {
 input[type="text"] {
     width: calc(100% - 20px);
     padding: 10px;
-    font-size: 14px;
+    /* font-size: 14px; */
     border: 1px solid #ccc;
     border-radius: 5px;
     box-sizing: border-box;

@@ -1,6 +1,11 @@
 <template>
   <div class="profile-page">
     <header class="header">
+      <div class="right">
+        <nav class="header-a">
+          id={{ userId }}
+        </nav>
+      </div>
       <div class="center">Личный кабинет</div>
       <div class="right">
         <nav>
@@ -14,8 +19,11 @@
     <OverlayComp></OverlayComp>
     <div class="first-row">
       <div class="profile-card">
-        <div class="profile-image">
-          <img :src="user.profilePic || 'default-avatar.png'" alt="Фото профиля" />
+        <div>
+          <div class="profile-image">
+            <img :src="user.profilePhoto" alt="Фото профиля" />
+          </div>
+          <button class="edit-btn" @click="showEditProtoModal = true">Изменить</button>
         </div>
         <div class="profile-details">
           <p>
@@ -24,7 +32,7 @@
           </p>
           <p>
             <span class="label">Логин:</span>
-            <span>{{ user.login || "Не указан" }}</span>
+            <span>{{ user.username || "Не указан" }}</span>
           </p>
           <button class="edit-btn" @click="showEditModal = true">Редактировать</button>
         </div>
@@ -33,9 +41,9 @@
         <div class="text-fav">Избранное</div>
         <div class="cards-container">
           <div class="cards">
-            <div v-for="(card, index) in favouriteCards" :key="index" class="card-container">
+            <div v-for="(card) in favouriteCards" :key="card.id" class="card-container">
               <div> 
-                <CabinetCard :card-id="card"></CabinetCard> 
+                <CabinetCard @remove-card="removeCardById" :card="card"></CabinetCard> 
               </div>
             </div>
           </div>
@@ -48,7 +56,7 @@
         <div class="routes">
           <div v-for="route in travelRoutes" :key="route.id" :route="route" class="route-container">
             <div> 
-              <CabinetRouteCard @click="goToRouteRoom"></CabinetRouteCard> 
+              <CabinetRouteCard @click="goToRouteRoom(route.id)" :route="route"></CabinetRouteCard> 
             </div>
           </div>
         </div>
@@ -59,6 +67,13 @@
       :user="user"
       @close="showEditModal = false"
       @save="updateUserInfo"
+    />
+    <EditPhotoModal
+      v-if="showEditProtoModal"
+      :show="showEditProtoModal"
+      :current-photo="user.profilePhoto"
+      @close="showEditProtoModal = false"
+      @save="updateProfilePhoto"
     />
 
     <div v-if="showDeleteModal" class="delete-confirmation-modal">
@@ -75,9 +90,12 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 import CabinetCard from '@/components/cabinet/CabinetCard.vue';
 import CabinetRouteCard from '@/components/cabinet/CabinetRouteCard.vue';
 import EditModal from '@/components/cabinet/EditModal.vue';
+import EditPhotoModal from '@/components/cabinet/EditPhotoModal.vue';
 import OverlayComp from '@/components/common/OverlayComp.vue';
 
 export default {
@@ -86,34 +104,100 @@ export default {
     CabinetCard,
     CabinetRouteCard,
     EditModal,
-    OverlayComp
+    OverlayComp,
+    EditPhotoModal
   },
   data() {
     return {
       roomId: null,
       user: {
-        email: 'user@example.com',
-        login: 'username',
-        profilePic: 'profile-pic.jpg',
+        profilePhoto: require("../assets/icon.jpeg")
       },
-      favouriteCards: [
-        { id: 1, name: 'Карточка 1' },
-      ],
-      travelRoutes: [
-        { id: 1, name: 'Комната 1' }
-      ],
+      favouriteCards: [],
+      travelRoutes: [],
       showEditModal: false,
-      showDeleteModal: false
+      showDeleteModal: false,
+      showEditProtoModal: false,
+      userId: null
     };
   },
   created() {
     this.roomId = this.id;
-    this.user.profilePic = require("../assets/icon.jpeg");
+    this.userId = localStorage.getItem("id");
+    this.getFavorite();
+    this.getUserRoutes();
+
+    axios.get(`/api/users/${localStorage.getItem("id")}`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+        .then((response) => {
+          console.log("Response", response);
+          this.user = response.data;
+          if (this.user.profilePhoto == "") {
+            this.user.profilePhoto = require("../assets/icon.jpeg")
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
   },
   methods: {
+    removeCardById(id) {
+      this.favouriteCards = this.favouriteCards.filter(c => c.id != id);
+    },
+    getFavorite() {
+      axios.get(`/api/card/favorite/${localStorage.getItem("id")}`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+        .then((response) => {
+          console.log("Response", response);
+          this.favouriteCards = response.data.cards;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    getUserRoutes() {
+      axios.get(`/api/route/all/${localStorage.getItem("id")}`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+        .then((response) => {
+          console.log("Response", response);
+          this.travelRoutes = response.data.routes;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     updateUserInfo(updatedUser) {
-      this.user = updatedUser;
-      this.showEditModal = false;
+      const userUpdate = {
+        userId: localStorage.getItem("id"),
+        email: updatedUser.email,
+        username: updatedUser.username
+      }
+      axios.put('/api/users', userUpdate, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+        .then((response) => {
+          console.log("Response", response);
+          this.user.email = updatedUser.email;
+          this.user.username = updatedUser.username;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     exit() {
       this.$router.push(`/home`)
@@ -129,8 +213,27 @@ export default {
       this.showDeleteModal = false;
       this.$router.push(`/`);
     },
-    goToRouteRoom() {
-      this.$router.push('/route-room/6');
+    goToRouteRoom(id) {
+      this.$router.push(`/route-room/${id}`);
+    },
+    updateProfilePhoto(newPhoto) {
+      const userUpdate = {
+        userId: localStorage.getItem("id"),
+        profilePhoto: newPhoto
+      }
+      axios.put('/api/users', userUpdate, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+        .then((response) => {
+          console.log("Response", response);
+          this.user.profilePhoto = newPhoto;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
   },
 };
@@ -241,6 +344,7 @@ nav {
 .cards {
   display: flex;
   padding: 20px;
+  min-height: 35vh;
 }
 
 .card-container {
@@ -256,6 +360,7 @@ nav {
   background-color: rgba(213, 251, 224, 0.3);
   border-radius: 16px;
   overflow-x: auto;
+  min-height: 30vh;
 }
 
 .routes {
@@ -327,7 +432,9 @@ nav {
 }
 
 .edit-btn:hover {
-  background-color: rgba(193, 250, 209, 0.883);;
+  background-color: rgba(193, 250, 209, 0.883);
+  transform: scale(1.05);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
 }
 
 .delete-confirmation-modal {

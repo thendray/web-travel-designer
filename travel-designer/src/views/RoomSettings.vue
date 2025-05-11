@@ -14,9 +14,9 @@
       <div class="main-content">
         <div class="container">
           <ChangeBaseSettings :login=settings.login :password=settings.password 
-            :name=settings.name :day-count=settings.days :card-max=settings.cardLimit
+            :name=settings.name :day-count=settings.days :card-max=settings.cardLimit :id=id
           ></ChangeBaseSettings>
-          <ChangeAdditionalSettings :start=settings.beginAddress :end=settings.endAddress></ChangeAdditionalSettings>
+          <ChangeAdditionalSettings :start=settings.beginAddress :end=settings.endAddress :id=id></ChangeAdditionalSettings>
         </div>
         <div class="category-section">
           <div class="main-text">Категории карточек</div>
@@ -82,7 +82,8 @@ export default {
       this.roomId = this.id;
       axios.get(`/api/route/${this.roomId}`, {
         headers: {
-          'accept': 'application/json'
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
         }
       })
       .then(response => {
@@ -174,8 +175,8 @@ nav {
 .container {
   display: flex;
   justify-content: center;
-  gap: 20px; /* Расстояние между блоками */
-  margin-bottom: 20px; /* Отступ снизу */
+  gap: 20px; 
+  margin-bottom: 20px; 
   margin-top: 10vh;
 }
 .category-section {
@@ -192,7 +193,7 @@ nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 15px; /* Расстояние между категориями */
+  gap: 15px;
   margin-bottom: 10px;
   margin-left: 50px;
   margin-right: 50px;

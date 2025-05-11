@@ -44,16 +44,18 @@
 
 <script>
 // import { ref } from 'vue';
+import axios from 'axios';
 
 let map = null;
 
 export default {
-  props: ['start', 'end'],
+  props: ['start', 'end', 'id'],
   
   data() {
     return {
       lStart: null,
       lEnd: null,
+      roomId: null,
       fields: [],
       showModal: false,
       currentField: '',
@@ -62,20 +64,20 @@ export default {
     }
   },
 
-  mounted() {
+  created() {
     this.lStart = this.start;
     this.lEnd = this.end;
     this.fields = {
         "Начальная точка путешествия": this.lStart,
         "Конечная точка путешествия": this.lEnd,
       };
+    this.roomId = this.id;
 
-    console.log(this.start)
+    console.log('roomid', this.roomId);
   },
   watch: {
     showModal(newVal) {
       if (newVal) {
-        // Даем Vue возможность отрисовать DOM элементы, а затем инициализируем карту
         this.$nextTick(() => {
           if (document.getElementById('map-container-2')) {
             console.log("map-container-2 существует");
@@ -88,16 +90,86 @@ export default {
     },
   },
   methods: {
+    handleClear() {
+      if (map) {
+        map.geoObjects.removeAll();
+        this.newValue = ""
+      }
+    },
+    handleFind() {
+      if (this.newValue != "") {
+        var geoCode = window.ymaps.geocode(this.newValue);
+        geoCode.then(
+          (res) => {
+            console.log("запрос: ", this.newValue, "ответ: ", res.geoObjects);
+            res.geoObjects.events
+                  .add('mouseenter', (event) => {
+                      var geoObject = event.get('target');
+                      map.hint.open(geoObject.geometry.getCoordinates(), geoObject.getAddressLine());
+                  })
+                  .add('mouseleave', () => {
+                      map.hint.close(true);
+                  })
+                  .add('click', (event) => {
+                      var geoObject = event.get('target');
+                      var coords = geoObject.geometry.getCoordinates();
+                      this.taskCoords = coords;
+
+                      console.log("Координаты метки: ", [coords[0].toPrecision(8), coords[1].toPrecision(8)].join(", "))
+                  })
+                  ;
+            
+            map.geoObjects.removeAll();
+            map.geoObjects.add(res.geoObjects);
+            map.setBounds(res.geoObjects.getBounds());
+          },
+          function(err){
+            console.log("Ошибка", err)
+          }
+        )
+      }
+    },
     openModal(key) {
       this.currentField = key;
       this.newValue = this.fields[key];
       this.showModal = true;
     },
     saveChange() {
+      var request;
       if (this.currentField) {
         this.fields[this.currentField] = this.newValue;
+        if (this.currentField == 'Начальная точка путешествия') {
+          request = {
+            address: this.newValue,
+            routeId: this.roomId,
+            x: this.taskCoords[0],
+            y: this.taskCoords[1],
+            isBegin: true
+          }
+        } else if (this.currentField == 'Конечная точка путешествия') {
+          request = {
+            routeId: this.roomId,
+            address: this.newValue,
+            x: this.taskCoords[0],
+            y: this.taskCoords[1],
+            isBegin: false
+          }
+        }
       }
-      this.showModal = false;
+
+      axios.post(`/api/route/add/settings`, request, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      })
+      .then(response => {
+        console.log(`response ${response.data}`);
+        this.showModal = false;
+      })
+      .catch(error => {
+        console.error('Ошибка при получении данных:', error);
+      });
     },
     cancelChange() {
       this.showModal = false;
@@ -111,7 +183,29 @@ export default {
           maxZoom: 18
       });
 
-      console.log(map);
+      this.handleMapClick();
+    },
+    handleMapClick() {
+      map.events.add("click", (e) => {
+        console.log(e);
+        if (!map.balloon.isOpen()) {
+          var coords = e.get("coords");
+          this.taskCoords = [coords[0].toPrecision(8), coords[1].toPrecision(8)];
+
+          map.balloon.open(coords, {
+            contentHeader: "Событие!",
+            contentBody:
+              "Координаты щелчка: " +
+              this.taskCoords.join(", ") +
+              "</p>",
+            contentFooter: "<sup>Щелкните еще раз</sup>",
+          });
+
+          console.log("Координаты щелчка: ", this.taskCoords.join(", "))
+        } else {
+          map.balloon.close();
+        }
+      });
     }
   }
 }
@@ -208,22 +302,22 @@ button:hover {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  max-width: 80%; /* Увеличиваем максимальную ширину */
-  min-width: 500px; /* Минимальная ширина для модального окна */
-  width: 100%; /* Адаптивная ширина */
+  max-width: 80%; 
+  min-width: 500px;
+  width: 100%; 
 }
 
 
 .content {
-  display: flex; /* Используем Flexbox */
-  gap: 20px; /* Отступ между формой и картой */
+  display: flex;
+  gap: 20px; 
   padding-bottom: 10px;
 }
 
 .form-fields {
-  flex: 2; /* Занимает оставшееся пространство */
+  flex: 2;
   display: flex;
-  flex-direction: column; /* Поля располагаются вертикально */
+  flex-direction: column; 
 }
 
 .form-fields input {
@@ -234,7 +328,7 @@ button:hover {
 }
 
 .map-container {
-  flex: 5; /* Карта занимает больше места */
+  flex: 5; 
   /* height: 400px;  */
   box-sizing: border-box;
   width: 100%; 

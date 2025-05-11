@@ -43,7 +43,7 @@
     <div v-if="showLeaveModal" class="modal">
       <div class="modal-main">
         <p class="main-modal-text">Вы точно хотите покинуть комнату?</p>
-        <button class="delete" @click="removeParticipant">Удалить</button>
+        <button class="delete" @click="leaveRoom">Покинуть</button>
         <button class="cancel" @click="closeLeaveModal">Отмена</button>
       </div>
     </div>
@@ -110,11 +110,12 @@ export default {
         console.log(`response ${response.data}`);
         this.members.push(response.data);
         console.log("cur members", this.members);
+        this.isModalOpen = false;
       })
       .catch(error => {
         console.error('Ошибка при получении данных:', error);
       });
-      this.isModalOpen = false;
+      
     },
     confirmRemove(member) {
       this.currentMember = member;
@@ -152,7 +153,7 @@ export default {
       })
       .then(response => {
         console.log(response.data);
-        this.$route.push('/home')
+        this.$router.push('/home');
         this.closeLeaveModal();
       })
       .catch(error => {

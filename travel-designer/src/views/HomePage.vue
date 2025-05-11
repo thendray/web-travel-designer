@@ -71,6 +71,7 @@ export default {
     exit() {
       localStorage.setItem('isAuth', false);
       localStorage.removeItem('id');
+      localStorage.removeItem('jwt');
 
       this.$router.push("/");
       console.log("exit");
